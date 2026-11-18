@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#123d32">
+<title>Florina Tennis Ladder | NorthGrip</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f2f5f2;color:#19382e;font-family:Arial,sans-serif}
+header{background:#123d32;color:white;padding:28px 20px;text-align:center}
+header h1{margin:0;font-size:25px;letter-spacing:1px}
+header p{color:#c8dfd3;margin:8px 0 0}
+main{max-width:760px;margin:25px auto;padding:0 15px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.stat,.panel{background:white;padding:18px;border-radius:14px;box-shadow:0 2px 10px #0000000b}
+.stat strong{display:block;font-size:27px;color:#176348}
+nav{display:flex;gap:8px;margin:20px 0;flex-wrap:wrap}
+button{border:0;border-radius:9px;padding:12px 16px;background:#176348;color:white;font-weight:bold;cursor:pointer}
+button.secondary{background:#e1ebe5;color:#174b39}
+.panel{margin-bottom:15px}
+h2{font-size:19px;margin-top:0}
+.player{display:flex;align-items:center;gap:12px;padding:12px 5px;border-bottom:1px solid #edf0ed}
+.rank{font-weight:bold;width:27px;color:#176348}
+.player-name{flex:1;font-weight:600}
+.small{font-size:12px;color:#718078}
+input,select{width:100%;padding:12px;margin:6px 0 14px;border:1px solid #ccd8d0;border-radius:8px;font-size:15px}
+label{font-size:13px;font-weight:bold}
+.notice{background:#e8f3ec;padding:12px;border-radius:9px;font-size:13px}
+footer{text-align:center;color:#718078;font-size:12px;padding:25px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header>
+<h1>🎾 FLORINA TENNIS LADDER</h1>
+<p>by NorthGrip · PLAY · CHALLENGE · CLIMB</p>
+</header>
+<main>
+<div class="stats">
+<div class="stat"><strong id="total">5 / 35</strong><span>Παίκτες</span></div>
+<div class="stat"><strong id="matches">0</strong><span>Αγώνες</span></div>
+</div>
+<nav>
+<button onclick="showTab('ranking')">Κατάταξη</button>
+<button class="secondary" onclick="showTab('challenges')">Προκλήσεις</button>
+<button class="secondary" onclick="showTab('players')">Παίκτες</button>
+</nav>
+<section id="ranking" class="panel">
+<h2>🏆 Γενική κατάταξη</h2>
+<div id="leaderboard"></div>
+</section>
+<section id="challenges" class="panel" hidden>
+<h2>🎾 Καταχώρηση αποτελέσματος</h2>
+<p class="notice">Επιτρέπονται προκλήσεις μόνο έως 3 θέσεις ψηλότερα. Τα αποτελέσματα σε αυτή την έκδοση είναι δοκιμαστικά.</p>
+<label>Παίκτης που προκαλεί</label>
+<select id="challenger"></select>
+<label>Αντίπαλος</label>
+<select id="opponent"></select>
+<label>Νικητής</label>
+<select id="winner">
+<option value="challenger">Παίκτης που προκαλεί</option>
+<option value="opponent">Αντίπαλος</option>
+</select>
+<button onclick="recordMatch()">Καταχώρηση αγώνα</button>
+<p id="message"></p>
+</section>
+<section id="players" class="panel" hidden>
+<h2>👥 Διαχείριση παικτών</h2>
+<label>Νέος παίκτης</label>
+<input id="newPlayer" placeholder="Ονοματεπώνυμο">
+<button onclick="addPlayer()">Προσθήκη παίκτη</button>
+<p class="small">Μέχρι 35 παίκτες. Η προσθήκη εδώ είναι τοπική δοκιμή.</p>
+</section>
+</main>
+<footer>FLORINA TENNIS LADDER · NORTHGRIP</footer>
+<script>
+let players=[
+"Ταμουτσέλης Παντελής",
+"Ταμουτσέλης Ορφέας",
+"Μπελμπάσης Πέτρος",
+"Ταρανίδης Δημήτριος",
+"Χριστάκης Σωτήρης"
+].map((name,id)=>({id,name,wins:0,losses:0,points:0}));
+
+let matches=0;
+
+function showTab(id){
+["ranking","challenges","players"].forEach(x=>{
+document.getElementById(x).hidden=x!==id;
+});
+}
+
+function render(){
+document.getElementById("total").textContent=players.length+" / 35";
+document.getElementById("matches").textContent=matches;
+document.getElementById("leaderboard").innerHTML=players.map((p,i)=>`
+<div class="player">
+<span class="rank">${i+1}</span>
+<span class="player-name">${p.name}<div class="small">${p.wins} νίκες · ${p.losses} ήττες</div></span>
+<strong>${p.points} π.</strong>
+</div>`).join("")+
+Array.from({length:35-players.length},(_,i)=>`
+<div class="player"><span class="rank">${players.length+i+1}</span>
+<span class="small">Κενή θέση</span></div>`).join("");
+
+let options=players.map((p,i)=>`<option value="${i}">${i+1}. ${p.name}</option>`).join("");
+document.getElementById("challenger").innerHTML=options;
+document.getElementById("opponent").innerHTML=options;
+}
+
+function recordMatch(){
+let a=+document.getElementById("challenger").value;
+let b=+document.getElementById("opponent").value;
+let msg=document.getElementById("message");
+if(a<=b){msg.textContent="Ο παίκτης που προκαλεί πρέπει να βρίσκεται χαμηλότερα.";return;}
+if(a-b>3){msg.textContent="Επιτρέπονται μόνο 3 θέσεις διαφορά.";return;}
+let win=document.getElementById("winner").value==="challenger"?a:b;
+let lose=win===a?b:a;
+players[win].wins++;
+players[win].points+=3;
+players[lose].losses++;
+players[lose].points++;
+let p=players.splice(win,1)[0];
+players.splice(lose,0,p);
+matches++;
+msg.textContent="Ο αγώνας καταχωρήθηκε επιτυχώς.";
+render();
+}
+
+function addPlayer(){
+let input=document.getElementById("newPlayer");
+let name=input.value.trim();
+if(!name)return alert("Συμπλήρωσε όνομα.");
+if(players.length>=35)return alert("Συμπληρώθηκαν οι 35 θέσεις.");
+players.push({id:Date.now(),name,wins:0,losses:0,points:0});
+input.value="";
+render();
+}
+
+render();
+</script>
+</body>
+</html>
+
+
+
+

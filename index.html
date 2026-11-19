@@ -571,6 +571,7 @@ function challengeStatusLabel(status){
   })[status] || status;
 }
 
+
 async function loadChallenges(){
   const notice=document.getElementById("challenge-login-notice");
   const controls=document.getElementById("challenge-controls");
@@ -595,9 +596,6 @@ async function loadChallenges(){
   controls.classList.remove("hidden");
 
   const me=players.find(p=>p.id===currentProfile.id);
-  console.log("MY PROFILE:", currentProfile);
-console.log("MY LADDER PLAYER:", me);
-console.log("ALL LADDER PLAYERS:", players);
   select.innerHTML='<option value="">Επίλεξε παίκτη</option>';
 
   if(me){
@@ -629,11 +627,57 @@ console.log("ALL LADDER PLAYERS:", players);
     return;
   }
 
+  const challengeIds=data.map(c=>c.id);
+
+  const {data:matches,error:matchError}=await supabaseClient
+    .from("matches")
+    .select("id,challenge_id,status,score,winner_id,loser_id")
+    .in("challenge_id",challengeIds);
+
+  if(matchError){
+    list.textContent="Σφάλμα φόρτωσης αποτελεσμάτων: "+matchError.message;
+    return;
+  }
+
+  const matchMap={};
+  (matches||[]).forEach(m=>{
+    matchMap[m.challenge_id]=m;
+  });
+
   list.innerHTML=data.map(c=>{
     const challenger=players.find(p=>p.id===c.challenger_id);
     const opponent=players.find(p=>p.id===c.opponent_id);
+    const isParticipant=
+      c.challenger_id===currentProfile.id ||
+      c.opponent_id===currentProfile.id;
+
     const isReceived=c.opponent_id===currentProfile.id;
     const canRespond=isReceived && c.status==="pending";
+    const match=matchMap[c.id];
+
+    let resultInfo="";
+    let resultButton="";
+
+    if(match?.status==="pending"){
+      resultInfo='<div class="small">Το αποτέλεσμα περιμένει έγκριση διαχειριστή.</div>';
+    }else if(match?.status==="approved"){
+      resultInfo=`<div class="small">Εγκεκριμένο αποτέλεσμα · Σκορ: ${escapeHTML(match.score||"")}</div>`;
+    }else if(match?.status==="rejected"){
+      resultInfo='<div class="small">Το προηγούμενο αποτέλεσμα απορρίφθηκε. Μπορεί να υποβληθεί ξανά.</div>';
+    }
+
+    if(c.status==="accepted" && isParticipant &&
+       (!match || match.status==="rejected")){
+      resultButton=`
+        <button
+          class="action submit-result-button"
+          data-id="${escapeHTML(c.id)}"
+          data-challenger="${escapeHTML(c.challenger_id)}"
+          data-opponent="${escapeHTML(c.opponent_id)}">
+          Καταχώρηση αποτελέσματος
+        </button>
+      `;
+    }
 
     return `
       <div class="pending-item">
@@ -645,13 +689,16 @@ console.log("ALL LADDER PLAYERS:", players);
             ${challengeStatusLabel(c.status)}
             · ${new Date(c.proposed_at||c.created_at).toLocaleDateString("el-GR")}
           </div>
+          ${resultInfo}
         </div>
-        ${canRespond?`
-          <div class="actions">
+
+        <div class="actions">
+          ${canRespond?`
             <button class="action respond-button" data-id="${escapeHTML(c.id)}" data-response="accepted">Αποδοχή</button>
             <button class="action danger respond-button" data-id="${escapeHTML(c.id)}" data-response="rejected">Απόρριψη</button>
-          </div>
-        `:""}
+          `:""}
+          ${resultButton}
+        </div>
       </div>
     `;
   }).join("");
@@ -659,47 +706,61 @@ console.log("ALL LADDER PLAYERS:", players);
   list.querySelectorAll(".respond-button").forEach(button=>{
     button.addEventListener("click",()=>respondToChallenge(button));
   });
-}
 
-document.getElementById("create-challenge-button").addEventListener("click",async()=>{
-  const select=document.getElementById("opponent-select");
-  const message=document.getElementById("challenge-message");
-  const opponentId=select.value;
+  list.querySelectorAll(".submit-result-button").forEach(button=>{
+    button.addEventListener("click",async()=>{
+      const challengerId=button.dataset.challenger;
+      const opponentId=button.dataset.opponent;
 
-  if(!currentProfile || currentProfile.status!=="approved"){
-    message.textContent="Χρειάζεται εγκεκριμένος λογαριασμός.";
-    return;
-  }
+      const challenger=players.find(p=>p.id===challengerId);
+      const opponent=players.find(p=>p.id===opponentId);
 
-  if(!opponentId){
-    message.textContent="Επίλεξε πρώτα αντίπαλο.";
-    return;
-  }
+      const choice=prompt(
+        `Ποιος κέρδισε;\n1 = ${challenger?.name||"Challenger"}\n2 = ${opponent?.name||"Opponent"}`
+      );
 
-  const button=document.getElementById("create-challenge-button");
-  button.disabled=true;
-  message.textContent="Αποστολή πρόκλησης…";
+      if(choice===null) return;
 
-  const {error}=await supabaseClient
-    .from("challenges")
-    .insert({
-      challenger_id:currentProfile.id,
-      opponent_id:opponentId,
-      status:"pending",
-      proposed_at:new Date().toISOString()
+      if(choice!=="1" && choice!=="2"){
+        alert("Επίλεξε 1 ή 2.");
+        return;
+      }
+
+      const winnerId=choice==="1"?challengerId:opponentId;
+
+      const score=prompt("Γράψε το τελικό σκορ (π.χ. 6-4, 6-3):");
+
+      if(score===null) return;
+
+      if(!score.trim()){
+        alert("Πρέπει να συμπληρώσεις το σκορ.");
+        return;
+      }
+
+      button.disabled=true;
+      button.textContent="Υποβολή…";
+
+      const {error}=await supabaseClient.rpc(
+        "submit_ladder_result",
+        {
+          target_challenge_id:button.dataset.id,
+          target_winner_id:winnerId,
+          target_score:score.trim()
+        }
+      );
+
+      if(error){
+        alert("Δεν καταχωρήθηκε το αποτέλεσμα: "+error.message);
+        button.disabled=false;
+        button.textContent="Καταχώρηση αποτελέσματος";
+        return;
+      }
+
+      alert("Το αποτέλεσμα υποβλήθηκε και περιμένει έγκριση διαχειριστή.");
+      await loadChallenges();
     });
-
-  button.disabled=false;
-
-  if(error){
-    message.textContent="Δεν δημιουργήθηκε η πρόκληση: "+error.message;
-    return;
-  }
-
-  message.textContent="Η πρόκληση στάλθηκε επιτυχώς!";
-  select.value="";
-  await loadChallenges();
-});
+  });
+}
 
 async function respondToChallenge(button){
   const id=button.dataset.id;

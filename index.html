@@ -136,13 +136,26 @@ function escapeHTML(value){return String(value??"").replace(/[&<>"']/g,char=>({"
 function setAuthMessage(message,isError=false){
   const el=document.getElementById("auth-message");el.textContent=message;el.classList.toggle("error",isError);el.classList.toggle("notice",!!message);
 }
+
 function renderPlayers(){
-  document.getElementById("total").textContent=players.length+" / 35";
-  const rankingHTML=players.map(p=>`<div class="player"><span class="rank">${p.position}</span><span class="player-name">${escapeHTML(p.name)}<span class="small">${p.wins} νίκες · ${p.losses} ήττες</span></span><strong class="points">${p.points} π.</strong></div>`).join("");
-  const emptyHTML=Array.from({length:Math.max(0,35-players.length)},(_,i)=>`<div class="player"><span class="rank">${players.length+i+1}</span><span class="empty">Κενή θέση</span><span></span></div>`).join("");
-  document.getElementById("leaderboard").innerHTML=rankingHTML+emptyHTML;
-  document.getElementById("players-list").innerHTML=players.length?players.map(p=>`<div class="player"><span class="rank">${p.position}</span><span class="player-name">${escapeHTML(p.name)}</span><span class="small">Εγκεκριμένος</span></div>`).join(""):'<p class="small">Δεν βρέθηκαν εγκεκριμένοι παίκτες.</p>';
+  const leaderboard = document.getElementById("leaderboard");
+  const total = document.getElementById("total");
+
+  if(!leaderboard) return;
+
+  total.textContent = `${players.length} / 35`;
+
+  leaderboard.innerHTML = players.length
+    ? players.map(p => `
+        <div class="player">
+          <span class="rank">${p.position}</span>
+          <span class="player-name">${escapeHTML(p.name)}</span>
+          <span class="small">Εγκεκριμένος</span>
+        </div>
+      `).join("")
+    : '<p class="small">Δεν βρέθηκαν εγκεκριμένοι παίκτες.</p>';
 }
+
 async function loadRanking(){
   const leaderboard=document.getElementById("leaderboard"),message=document.getElementById("connection-message");
   try{

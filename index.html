@@ -228,7 +228,125 @@ async function loadPendingPlayers(){
   list.querySelectorAll(".approve-button").forEach(button=>button.addEventListener("click",()=>approvePlayer(button.dataset.playerId,button)));
 }
  
+async function loadPendingResults(){
+  const list = document.getElementById("pending-results-list");
+  if(!list) return;
 
+  list.textContent = "Φόρτωση αποτελεσμάτων…";
+
+  const {data:matches, error} = await supabaseClient
+    .from("matches")
+    .select("id,challenge_id,winner_id,loser_id,score,played_at,created_at")
+    .eq("status","pending")
+    .order("created_at",{ascending:true});
+
+  if(error){
+    list.textContent = "Σφάλμα φόρτωσης αποτελεσμάτων: " + error.message;
+    return;
+  }
+
+  if(!matches || matches.length === 0){
+    list.innerHTML = '<p class="small">Δεν υπάρχουν εκκρεμή αποτελέσματα.</p>';
+    return;
+  }
+
+  const playerIds = [...new Set(matches.flatMap(m => [m.winner_id,m.loser_id]))];
+
+  const {data:people, error:peopleError} = await supabaseClient
+    .from("players")
+    .select("id,full_name")
+    .in("id",playerIds);
+
+  if(peopleError){
+    list.textContent = "Σφάλμα φόρτωσης παικτών: " + peopleError.message;
+    return;
+  }
+
+  const playerName = id =>
+    people?.find(p => p.id === id)?.full_name || "Άγνωστος παίκτης";
+
+  list.innerHTML = matches.map(m => `
+    <div class="pending-item">
+      <div>
+        <strong>${escapeHTML(playerName(m.winner_id))}</strong>
+        <span class="small"> νικητής</span>
+        <div class="small">
+          Αντίπαλος: ${escapeHTML(playerName(m.loser_id))}
+        </div>
+        <div class="small">
+          Σκορ: ${escapeHTML(m.score || "Δεν δηλώθηκε")}
+        </div>
+        <div class="small">
+          Ημερομηνία:
+          ${m.played_at ? new Date(m.played_at).toLocaleDateString("el-GR") : "Δεν δηλώθηκε"}
+        </div>
+      </div>
+
+      <div class="actions">
+        <button
+          class="action approve-result-button"
+          data-match-id="${escapeHTML(m.id)}">
+          Έγκριση
+        </button>
+
+        <button
+          class="action danger reject-result-button"
+          data-match-id="${escapeHTML(m.id)}">
+          Απόρριψη
+        </button>
+      </div>
+    </div>
+  `).join("");
+
+  list.querySelectorAll(".approve-result-button").forEach(button => {
+    button.addEventListener("click", async () => {
+      if(!confirm("Να εγκριθεί αυτό το αποτέλεσμα και να ενημερωθεί η κατάταξη;")) return;
+
+      button.disabled = true;
+
+      const {error} = await supabaseClient.rpc(
+        "approve_ladder_result",
+        {target_match_id:button.dataset.matchId}
+      );
+
+      if(error){
+        alert("Σφάλμα έγκρισης: " + error.message);
+        button.disabled = false;
+        return;
+      }
+
+      alert("Το αποτέλεσμα εγκρίθηκε επιτυχώς.");
+
+      await loadPendingResults();
+      await loadRanking();
+      await loadChallenges();
+    });
+  });
+
+  list.querySelectorAll(".reject-result-button").forEach(button => {
+    button.addEventListener("click", async () => {
+      if(!confirm("Να απορριφθεί αυτό το αποτέλεσμα;")) return;
+
+      button.disabled = true;
+
+      const {error} = await supabaseClient.rpc(
+        "reject_ladder_result",
+        {target_match_id:button.dataset.matchId}
+      );
+
+      if(error){
+        alert("Σφάλμα απόρριψης: " + error.message);
+        button.disabled = false;
+        return;
+      }
+
+      alert("Το αποτέλεσμα απορρίφθηκε.");
+
+      await loadPendingResults();
+      await loadChallenges();
+    });
+  });
+}
 
 async function loadAllPlayers(){
   const list = document.getElementById("all-players-list");

@@ -6,282 +6,179 @@
   <meta name="theme-color" content="#10251d">
   <title>Florina Tennis Ladder | NorthGrip</title>
   <style>
-    :root {
-      --green: #173b2d;
-      --green-2: #245640;
-      --lime: #c8e36a;
-      --bg: #f3f5f1;
-      --card: #ffffff;
-      --text: #17231d;
-      --muted: #68756d;
-      --line: #e2e8e2;
-      --danger: #a43b35;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: Arial, Helvetica, sans-serif;
-    }
-    header {
-      background: var(--green);
-      color: white;
-      padding: 26px 18px 22px;
-      border-bottom: 5px solid var(--lime);
-    }
-    .wrap { width: min(920px, calc(100% - 28px)); margin: 0 auto; }
-    .brand { color: var(--lime); font-size: 12px; font-weight: 800; letter-spacing: 2px; }
-    h1 { margin: 8px 0 5px; font-size: clamp(25px, 5vw, 38px); }
-    header p { margin: 0; color: #d9e5dc; }
-    main { padding: 22px 0 38px; }
-    .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 18px; }
-    .stat, .panel {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      box-shadow: 0 3px 12px rgba(20,45,30,.04);
-    }
-    .stat { padding: 15px 17px; }
-    .stat span { display: block; color: var(--muted); font-size: 13px; margin-bottom: 5px; }
-    .stat strong { font-size: 25px; }
-    nav { display: flex; gap: 8px; margin: 0 0 14px; overflow-x: auto; }
-    nav button {
-      border: 1px solid var(--line);
-      background: white;
-      color: var(--green);
-      padding: 11px 16px;
-      border-radius: 999px;
-      font-weight: 700;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    nav button.active { background: var(--green); border-color: var(--green); color: white; }
-    .panel { padding: 18px; }
-    h2 { font-size: 20px; margin: 0 0 6px; }
-    .intro, .small { color: var(--muted); font-size: 13px; line-height: 1.5; }
-    .intro { margin: 0 0 15px; }
-    .player {
-      display: grid;
-      grid-template-columns: 38px minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 11px;
-      padding: 12px 9px;
-      border-bottom: 1px solid var(--line);
-    }
-    .player:last-child { border-bottom: 0; }
-    .rank {
-      display: grid;
-      place-items: center;
-      width: 32px;
-      height: 32px;
-      border-radius: 9px;
-      background: #edf3e9;
-      color: var(--green);
-      font-weight: 800;
-    }
-    .player-name { font-weight: 700; overflow-wrap: anywhere; }
-    .player-name .small { display: block; font-weight: 400; }
-    .points { font-weight: 800; color: var(--green); white-space: nowrap; }
-    .empty { color: #8a958d; font-weight: 400; }
-    .notice {
-      padding: 12px 13px;
-      border-radius: 10px;
-      background: #f1f5ed;
-      color: #405747;
-      font-size: 13px;
-      line-height: 1.5;
-      margin-top: 13px;
-    }
-    .error { background: #fff0ef; color: var(--danger); }
-    .loading { color: var(--muted); padding: 18px 4px; }
-    .hidden { display: none !important; }
-    footer { text-align: center; padding: 20px 12px 28px; color: var(--muted); font-size: 11px; letter-spacing: 1.3px; }
-    @media (max-width: 520px) {
-      .panel { padding: 14px; }
-      .player { gap: 8px; padding-left: 3px; padding-right: 3px; }
-    }
+    :root{--green:#173b2d;--green-2:#245640;--lime:#c8e36a;--bg:#f3f5f1;--card:#fff;--text:#17231d;--muted:#68756d;--line:#e2e8e2;--danger:#a43b35}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+    header{background:var(--green);color:#fff;padding:26px 18px 22px;border-bottom:5px solid var(--lime)}
+    .wrap{width:min(920px,calc(100% - 28px));margin:0 auto}.brand{color:var(--lime);font-size:12px;font-weight:800;letter-spacing:2px}
+    h1{margin:8px 0 5px;font-size:clamp(25px,5vw,38px)}header p{margin:0;color:#d9e5dc}main{padding:22px 0 38px}
+    .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:18px}
+    .stat,.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 3px 12px rgba(20,45,30,.04)}
+    .stat{padding:15px 17px}.stat span{display:block;color:var(--muted);font-size:13px;margin-bottom:5px}.stat strong{font-size:25px}
+    nav{display:flex;gap:8px;margin:0 0 14px;overflow-x:auto}nav button{border:1px solid var(--line);background:#fff;color:var(--green);padding:11px 16px;border-radius:999px;font-weight:700;cursor:pointer;white-space:nowrap}
+    nav button.active{background:var(--green);border-color:var(--green);color:#fff}.panel{padding:18px;margin-bottom:14px}
+    h2{font-size:20px;margin:0 0 6px}h3{font-size:16px;margin:18px 0 8px}.intro,.small{color:var(--muted);font-size:13px;line-height:1.5}.intro{margin:0 0 15px}
+    .player{display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:center;gap:11px;padding:12px 9px;border-bottom:1px solid var(--line)}
+    .player:last-child{border-bottom:0}.rank{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:#edf3e9;color:var(--green);font-weight:800}
+    .player-name{font-weight:700;overflow-wrap:anywhere}.player-name .small{display:block;font-weight:400}.points{font-weight:800;color:var(--green);white-space:nowrap}
+    .empty{color:#8a958d;font-weight:400}.notice{padding:12px 13px;border-radius:10px;background:#f1f5ed;color:#405747;font-size:13px;line-height:1.5;margin-top:13px}
+    .error{background:#fff0ef;color:var(--danger)}.loading{color:var(--muted);padding:18px 4px}.hidden{display:none!important}
+    footer{text-align:center;padding:20px 12px 28px;color:var(--muted);font-size:11px;letter-spacing:1.3px}
+    label{display:block;font-size:13px;font-weight:700;margin:10px 0 5px}input{width:100%;padding:12px;border:1px solid var(--line);border-radius:9px;font-size:16px;background:#fff}
+    .field{margin-bottom:10px}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+    .action{border:0;border-radius:9px;padding:11px 15px;background:var(--green);color:#fff;font-weight:700;cursor:pointer}
+    .action.secondary{background:#edf3e9;color:var(--green)}.action.danger{background:#a43b35}.action:disabled{opacity:.55;cursor:wait}
+    .statusline{font-size:13px;line-height:1.5;margin-top:10px}.pending-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+    @media(max-width:520px){.panel{padding:14px}.player{gap:8px;padding-left:3px;padding-right:3px}.pending-item{align-items:flex-start;flex-direction:column}}
   </style>
 </head>
 <body>
-  <header>
-    <div class="wrap">
-      <div class="brand">NORTHGRIP PRESENTS</div>
-      <h1>Florina Tennis Ladder</h1>
-      <p>Η κατάταξη του τένις στη Φλώρινα</p>
+<header><div class="wrap"><div class="brand">NORTHGRIP PRESENTS</div><h1>Florina Tennis Ladder</h1><p>Η κατάταξη του τένις στη Φλώρινα</p></div></header>
+<main class="wrap">
+  <section class="stats" aria-label="Στατιστικά">
+    <div class="stat"><span>Παίκτες</span><strong id="total">— / 35</strong></div>
+    <div class="stat"><span>Αγώνες</span><strong id="matches">—</strong></div>
+  </section>
+  <nav aria-label="Καρτέλες">
+    <button class="active" data-tab="ranking" onclick="showTab('ranking',this)">Κατάταξη</button>
+    <button data-tab="challenges" onclick="showTab('challenges',this)">Προκλήσεις</button>
+    <button data-tab="players" onclick="showTab('players',this)">Παίκτες / Σύνδεση</button>
+  </nav>
+  <section id="ranking" class="panel">
+    <h2>Επίσημη κατάταξη</h2><p class="intro">Η κατάταξη ενημερώνεται από την κοινή βάση δεδομένων.</p>
+    <div id="leaderboard" class="loading">Γίνεται σύνδεση με τη βάση δεδομένων…</div><div id="connection-message" class="notice hidden"></div>
+  </section>
+  <section id="challenges" class="panel hidden">
+    <h2>Προκλήσεις</h2><p class="intro">Ένας παίκτης μπορεί να προκαλέσει παίκτη που βρίσκεται έως τρεις θέσεις ψηλότερα.</p>
+    <div class="notice">Η ηλεκτρονική δημιουργία και αποδοχή προκλήσεων θα ενεργοποιηθεί σε επόμενο στάδιο.</div>
+  </section>
+  <section id="players" class="panel hidden">
+    <h2>Παίκτες</h2><p class="intro">Εγγραφή νέου παίκτη, σύνδεση και έγκριση από διαχειριστή.</p>
+    <div id="auth-status" class="notice">Δεν είσαι συνδεδεμένος.</div>
+    <div id="auth-forms">
+      <h3>Νέα εγγραφή</h3>
+      <form id="signup-form">
+        <div class="field"><label for="signup-name">Ονοματεπώνυμο</label><input id="signup-name" autocomplete="name" required maxlength="120"></div>
+        <div class="field"><label for="signup-phone">Κινητό (προαιρετικό)</label><input id="signup-phone" type="tel" autocomplete="tel"></div>
+        <div class="field"><label for="signup-email">Email</label><input id="signup-email" type="email" autocomplete="email" required></div>
+        <div class="field"><label for="signup-password">Κωδικός (τουλάχιστον 8 χαρακτήρες)</label><input id="signup-password" type="password" autocomplete="new-password" minlength="8" required></div>
+        <div class="actions"><button class="action" type="submit">Εγγραφή</button></div>
+      </form>
+      <h3>Σύνδεση υπάρχοντος λογαριασμού</h3>
+      <form id="login-form">
+        <div class="field"><label for="login-email">Email</label><input id="login-email" type="email" autocomplete="username" required></div>
+        <div class="field"><label for="login-password">Κωδικός</label><input id="login-password" type="password" autocomplete="current-password" required></div>
+        <div class="actions"><button class="action secondary" type="submit">Σύνδεση</button></div>
+      </form>
     </div>
-  </header>
+    <div id="signed-in-controls" class="hidden"><div class="actions"><button id="logout-button" class="action secondary" type="button">Αποσύνδεση</button></div></div>
+    <div id="auth-message" class="statusline" role="status"></div>
+    <div id="admin-section" class="hidden">
+      <h3>Αιτήσεις προς έγκριση</h3><p class="small">Με την έγκριση, ο παίκτης προστίθεται στην επόμενη θέση μετά τον τελευταίο.</p>
+      <div id="pending-list" class="loading">Φόρτωση αιτήσεων…</div>
+    </div>
+    <h3>Κατάταξη παικτών</h3><div id="players-list" class="loading">Τα στοιχεία θα εμφανιστούν μετά τη φόρτωση της κατάταξης.</div>
+  </section>
+</main>
+<footer>FLORINA TENNIS LADDER · NORTHGRIP</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+"use strict";
+const SUPABASE_URL = "https://kudiymevgmnaosjregvv.supabase.co";
+// Αντικατάστησε μόνο το κείμενο παρακάτω με το Publishable Key που υπάρχει ήδη στο παλιό index.html.
+const SUPABASE_KEY = "ΒΑΛΕ_ΕΔΩ_ΤΟ_PUBLISHABLE_KEY";
+let supabaseClient = null;
+let players = [];
+let currentUser = null;
 
-  <main class="wrap">
-    <section class="stats" aria-label="Στατιστικά">
-      <div class="stat">
-        <span>Παίκτες</span>
-        <strong id="total">— / 35</strong>
-      </div>
-      <div class="stat">
-        <span>Αγώνες</span>
-        <strong id="matches">—</strong>
-      </div>
-    </section>
-
-    <nav aria-label="Καρτέλες">
-      <button class="active" data-tab="ranking" onclick="showTab('ranking', this)">Κατάταξη</button>
-      <button data-tab="challenges" onclick="showTab('challenges', this)">Προκλήσεις</button>
-      <button data-tab="players" onclick="showTab('players', this)">Παίκτες</button>
-    </nav>
-
-    <section id="ranking" class="panel">
-      <h2>Επίσημη κατάταξη</h2>
-      <p class="intro">Η κατάταξη ενημερώνεται από την κοινή βάση δεδομένων.</p>
-      <div id="leaderboard" class="loading">Γίνεται σύνδεση με τη βάση δεδομένων…</div>
-      <div id="connection-message" class="notice hidden"></div>
-    </section>
-
-    <section id="challenges" class="panel hidden">
-      <h2>Προκλήσεις</h2>
-      <p class="intro">Ένας παίκτης μπορεί να προκαλέσει παίκτη που βρίσκεται έως τρεις θέσεις ψηλότερα.</p>
-      <div class="notice">Η ηλεκτρονική δημιουργία και αποδοχή προκλήσεων θα ενεργοποιηθεί στο επόμενο στάδιο. Προς το παρόν δεν καταχωρίζεται αγώνας από αυτή την καρτέλα.</div>
-    </section>
-
-    <section id="players" class="panel hidden">
-      <h2>Παίκτες</h2>
-      <p class="intro">Η λίστα εμφανίζει τους εγκεκριμένους παίκτες της κατάταξης.</p>
-      <div id="players-list" class="loading">Τα στοιχεία θα εμφανιστούν μετά τη φόρτωση της κατάταξης.</div>
-      <div class="notice">Η εγγραφή νέων παικτών και η έγκρισή τους από διαχειριστή θα ενεργοποιηθούν στο επόμενο στάδιο.</div>
-    </section>
-  </main>
-
-  <footer>FLORINA TENNIS LADDER · NORTHGRIP</footer>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    "use strict";
-
-    const SUPABASE_URL = "https://kudiymevgmnaosjregvv.supabase.co";
-    // Βάλε εδώ το δικό σου Supabase Publishable Key (sb_publishable_...).
-    const SUPABASE_KEY = "sb_publishable_1S2_WH4LSD0cDCz2kgUBTw_Ze9a6hil";
-
-    let supabaseClient = null;
-    let players = [];
-
-    function showTab(id, button) {
-      ["ranking", "challenges", "players"].forEach(tabId => {
-        document.getElementById(tabId).classList.toggle("hidden", tabId !== id);
-      });
-      document.querySelectorAll("nav button").forEach(btn => btn.classList.remove("active"));
-      if (button) button.classList.add("active");
-    }
-
-    function escapeHTML(value) {
-      return String(value ?? "").replace(/[&<>"']/g, char => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-      })[char]);
-    }
-
-    function renderPlayers() {
-      const total = document.getElementById("total");
-      total.textContent = players.length + " / 35";
-
-      const rankingHTML = players.map(player => `
-        <div class="player">
-          <span class="rank">${player.position}</span>
-          <span class="player-name">
-            ${escapeHTML(player.name)}
-            <span class="small">${player.wins} νίκες · ${player.losses} ήττες</span>
-          </span>
-          <strong class="points">${player.points} π.</strong>
-        </div>
-      `).join("");
-
-      const emptyCount = Math.max(0, 35 - players.length);
-      const emptyHTML = Array.from({ length: emptyCount }, (_, index) => `
-        <div class="player">
-          <span class="rank">${players.length + index + 1}</span>
-          <span class="empty">Κενή θέση</span>
-          <span></span>
-        </div>
-      `).join("");
-
-      document.getElementById("leaderboard").innerHTML = rankingHTML + emptyHTML;
-      document.getElementById("players-list").innerHTML = players.length
-        ? players.map(player => `
-            <div class="player">
-              <span class="rank">${player.position}</span>
-              <span class="player-name">${escapeHTML(player.name)}</span>
-              <span class="small">Εγκεκριμένος</span>
-            </div>
-          `).join("")
-        : '<p class="small">Δεν βρέθηκαν εγκεκριμένοι παίκτες.</p>';
-    }
-
-    async function loadRanking() {
-      const leaderboard = document.getElementById("leaderboard");
-      const message = document.getElementById("connection-message");
-
-      try {
-        const { data, error } = await supabaseClient
-          .from("ladder_public")
-          .select("position, player_id, full_name, wins, losses, points")
-          .order("position", { ascending: true });
-
-        if (error) throw error;
-
-        players = (data || [])
-          .filter(row => row.player_id && row.full_name)
-          .map(row => ({
-            position: row.position,
-            name: row.full_name,
-            wins: Number(row.wins || 0),
-            losses: Number(row.losses || 0),
-            points: Number(row.points || 0)
-          }));
-
-        renderPlayers();
-        document.getElementById("matches").textContent = "0";
-        message.classList.add("hidden");
-
-        if (players.length === 0) {
-          message.textContent = "Η σύνδεση με το Supabase λειτουργεί, αλλά δεν βρέθηκαν παίκτες στη δημόσια κατάταξη.";
-          message.classList.remove("hidden");
-        }
-      } catch (error) {
-        leaderboard.textContent = "Δεν ήταν δυνατή η φόρτωση της κατάταξης.";
-        message.textContent = "Σφάλμα βάσης δεδομένων: " + (error.message || String(error));
-        message.classList.remove("hidden");
-        message.classList.add("error");
-        document.getElementById("total").textContent = "— / 35";
-        document.getElementById("matches").textContent = "—";
-        console.error("Supabase ranking error:", error);
-      }
-    }
-
-    async function startApp() {
-      const leaderboard = document.getElementById("leaderboard");
-
-      if (!window.supabase || typeof window.supabase.createClient !== "function") {
-        leaderboard.textContent = "Δεν φορτώθηκε η βιβλιοθήκη Supabase. Έλεγξε τη σύνδεση στο internet ή τη φόρτωση του CDN.";
-        return;
-      }
-
-      if (!SUPABASE_KEY || !SUPABASE_KEY.startsWith("sb_publishable_")) {
-        leaderboard.textContent = "Δεν έχει συμπληρωθεί το Supabase Publishable Key στον κώδικα.";
-        return;
-      }
-
-      try {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        await loadRanking();
-      } catch (error) {
-        leaderboard.textContent = "Αποτυχία αρχικοποίησης Supabase: " + (error.message || String(error));
-        console.error("Supabase initialization error:", error);
-      }
-    }
-
-    startApp();
-  </script>
+function showTab(id,button){
+  ["ranking","challenges","players"].forEach(tabId=>document.getElementById(tabId).classList.toggle("hidden",tabId!==id));
+  document.querySelectorAll("nav button").forEach(btn=>btn.classList.remove("active"));
+  if(button)button.classList.add("active");
+}
+function escapeHTML(value){return String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[char]));}
+function setAuthMessage(message,isError=false){
+  const el=document.getElementById("auth-message");el.textContent=message;el.classList.toggle("error",isError);el.classList.toggle("notice",!!message);
+}
+function renderPlayers(){
+  document.getElementById("total").textContent=players.length+" / 35";
+  const rankingHTML=players.map(p=>`<div class="player"><span class="rank">${p.position}</span><span class="player-name">${escapeHTML(p.name)}<span class="small">${p.wins} νίκες · ${p.losses} ήττες</span></span><strong class="points">${p.points} π.</strong></div>`).join("");
+  const emptyHTML=Array.from({length:Math.max(0,35-players.length)},(_,i)=>`<div class="player"><span class="rank">${players.length+i+1}</span><span class="empty">Κενή θέση</span><span></span></div>`).join("");
+  document.getElementById("leaderboard").innerHTML=rankingHTML+emptyHTML;
+  document.getElementById("players-list").innerHTML=players.length?players.map(p=>`<div class="player"><span class="rank">${p.position}</span><span class="player-name">${escapeHTML(p.name)}</span><span class="small">Εγκεκριμένος</span></div>`).join(""):'<p class="small">Δεν βρέθηκαν εγκεκριμένοι παίκτες.</p>';
+}
+async function loadRanking(){
+  const leaderboard=document.getElementById("leaderboard"),message=document.getElementById("connection-message");
+  try{
+    const {data,error}=await supabaseClient.from("ladder_public").select("position,player_id,full_name,wins,losses,points").order("position",{ascending:true});
+    if(error)throw error;
+    players=(data||[]).filter(r=>r.player_id&&r.full_name).map(r=>({position:r.position,name:r.full_name,wins:Number(r.wins||0),losses:Number(r.losses||0),points:Number(r.points||0)}));
+    renderPlayers();document.getElementById("matches").textContent="0";message.classList.add("hidden");message.classList.remove("error");
+    if(!players.length){message.textContent="Η σύνδεση λειτουργεί, αλλά δεν βρέθηκαν παίκτες.";message.classList.remove("hidden");}
+  }catch(error){leaderboard.textContent="Δεν ήταν δυνατή η φόρτωση της κατάταξης.";message.textContent="Σφάλμα βάσης δεδομένων: "+(error.message||String(error));message.classList.remove("hidden");message.classList.add("error");console.error(error);}
+}
+async function refreshAuth(){
+  const {data:{session}}=await supabaseClient.auth.getSession();
+  currentUser=session?.user||null;
+  const status=document.getElementById("auth-status");
+  document.getElementById("auth-forms").classList.toggle("hidden",!!currentUser);
+  document.getElementById("signed-in-controls").classList.toggle("hidden",!currentUser);
+  document.getElementById("admin-section").classList.add("hidden");
+  if(!currentUser){status.textContent="Δεν είσαι συνδεδεμένος.";return;}
+  const {data:profile,error}=await supabaseClient.from("players").select("full_name,status,is_admin").eq("auth_user_id",currentUser.id).maybeSingle();
+  if(error){status.textContent="Συνδέθηκες, αλλά δεν φορτώθηκε το προφίλ: "+error.message;return;}
+  if(!profile){status.textContent="Συνδέθηκες. Δεν βρέθηκε ακόμη προφίλ παίκτη.";return;}
+  status.textContent=`Συνδεδεμένος ως ${profile.full_name}. Κατάσταση: ${profile.status==="approved"?"Εγκεκριμένος":"Αναμονή έγκρισης"}.`;
+  if(profile.is_admin&&profile.status==="approved"){document.getElementById("admin-section").classList.remove("hidden");await loadPendingPlayers();}
+}
+async function loadPendingPlayers(){
+  const list=document.getElementById("pending-list");list.textContent="Φόρτωση αιτήσεων…";
+  const {data,error}=await supabaseClient.from("players").select("id,full_name,email,phone,created_at").eq("status","pending").order("created_at",{ascending:true});
+  if(error){list.textContent="Δεν ήταν δυνατή η φόρτωση αιτήσεων: "+error.message;return;}
+  if(!data?.length){list.innerHTML='<p class="small">Δεν υπάρχουν εκκρεμείς αιτήσεις.</p>';return;}
+  list.innerHTML=data.map(p=>`<div class="pending-item"><div><strong>${escapeHTML(p.full_name)}</strong><div class="small">${escapeHTML(p.email||"")} ${p.phone?"· "+escapeHTML(p.phone):""}</div></div><button class="action approve-button" data-player-id="${escapeHTML(p.id)}">Έγκριση</button></div>`).join("");
+  list.querySelectorAll(".approve-button").forEach(button=>button.addEventListener("click",()=>approvePlayer(button.dataset.playerId,button)));
+}
+async function approvePlayer(playerId,button){
+  button.disabled=true;button.textContent="Έγκριση…";
+  const {data,error}=await supabaseClient.rpc("approve_ladder_player",{target_player_id:playerId});
+  if(error){setAuthMessage("Δεν έγινε η έγκριση: "+error.message,true);button.disabled=false;button.textContent="Έγκριση";return;}
+  setAuthMessage("Ο παίκτης εγκρίθηκε και πήρε τη θέση "+data+".");
+  await loadPendingPlayers();await loadRanking();
+}
+document.getElementById("signup-form").addEventListener("submit",async event=>{
+  event.preventDefault();setAuthMessage("Γίνεται η εγγραφή…");
+  const full_name=document.getElementById("signup-name").value.trim();
+  const phone=document.getElementById("signup-phone").value.trim();
+  const email=document.getElementById("signup-email").value.trim();
+  const password=document.getElementById("signup-password").value;
+  const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{full_name,phone}}});
+  if(error){setAuthMessage("Η εγγραφή απέτυχε: "+error.message,true);return;}
+  if(data.session){await refreshAuth();setAuthMessage("Η εγγραφή ολοκληρώθηκε. Το προφίλ σου περιμένει έγκριση διαχειριστή.");}
+  else{setAuthMessage("Η αίτηση εγγραφής δημιουργήθηκε. Έλεγξε το email σου για επιβεβαίωση, αν σου ζητηθεί. Μετά τη σύνδεση θα περιμένεις έγκριση διαχειριστή.");}
+  event.target.reset();
+});
+document.getElementById("login-form").addEventListener("submit",async event=>{
+  event.preventDefault();setAuthMessage("Γίνεται σύνδεση…");
+  const email=document.getElementById("login-email").value.trim(),password=document.getElementById("login-password").value;
+  const {error}=await supabaseClient.auth.signInWithPassword({email,password});
+  if(error){setAuthMessage("Η σύνδεση απέτυχε: "+error.message,true);return;}
+  event.target.reset();setAuthMessage("Η σύνδεση ολοκληρώθηκε.");await refreshAuth();
+});
+document.getElementById("logout-button").addEventListener("click",async()=>{
+  const {error}=await supabaseClient.auth.signOut();if(error){setAuthMessage("Δεν έγινε αποσύνδεση: "+error.message,true);return;}
+  setAuthMessage("Έγινες αποσύνδεση.");await refreshAuth();
+});
+async function startApp(){
+  const leaderboard=document.getElementById("leaderboard");
+  if(!window.supabase||typeof window.supabase.createClient!=="function"){leaderboard.textContent="Δεν φορτώθηκε η βιβλιοθήκη Supabase.";return;}
+  if(!SUPABASE_KEY||!SUPABASE_KEY.startsWith("sb_publishable_")){leaderboard.textContent="Δεν έχει συμπληρωθεί το Supabase Publishable Key στο index.html.";return;}
+  try{
+    supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+    await loadRanking();await refreshAuth();
+    supabaseClient.auth.onAuthStateChange(()=>{setTimeout(()=>refreshAuth(),0);});
+  }catch(error){leaderboard.textContent="Αποτυχία σύνδεσης Supabase: "+(error.message||String(error));console.error(error);}
+}
+startApp();
+</script>
 </body>
 </html>

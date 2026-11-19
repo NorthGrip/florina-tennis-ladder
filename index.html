@@ -167,6 +167,7 @@ players=(data||[]).filter(r=>r.player_id&&r.full_name).map(r=>({id:r.player_id,p
   }catch(error){leaderboard.textContent="Δεν ήταν δυνατή η φόρτωση της κατάταξης.";message.textContent="Σφάλμα βάσης δεδομένων: "+(error.message||String(error));message.classList.remove("hidden");message.classList.add("error");console.error(error);}
 }
  
+
 async function refreshAuth(){
   const {data:{session}} = await supabaseClient.auth.getSession();
   currentUser = session?.user || null;
@@ -206,10 +207,12 @@ async function refreshAuth(){
   if(profile.is_admin && profile.status==="approved"){
     document.getElementById("admin-section").classList.remove("hidden");
     await loadPendingPlayers();
+    await loadAllPlayers();
   }
 
   await loadChallenges();
 }
+
 
 async function loadPendingPlayers(){
   const list=document.getElementById("pending-list");list.textContent="Φόρτωση αιτήσεων…";

@@ -214,19 +214,35 @@ if(!profile){
   control.className = "player";
 
   const button = document.createElement("button");
-  button.textContent = profile.is_available
-    ? "Δήλωσε μη διαθέσιμος"
-    : "Δήλωσε διαθέσιμος";
+button.type = "button";
+button.textContent = profile.is_available
+  ? "Δήλωσε μη διαθέσιμος"
+  : "Δήλωσε διαθέσιμος";
 
-  button.onclick = async () => {
-    button.disabled = true;
+button.style.cursor = "pointer";
+button.style.padding = "12px 20px";
+button.style.background = "#166534";
+button.style.color = "white";
+button.style.border = "none";
+button.style.borderRadius = "8px";
+button.style.fontWeight = "bold";
 
-    try{
-      await updateMyAvailability(!profile.is_available);
-    }finally{
-      button.disabled = false;
-    }
-  };
+button.addEventListener("click", async function(){
+  button.disabled = true;
+
+  const {error} = await supabaseClient.rpc(
+    "set_ladder_availability",
+    {target_is_available: !profile.is_available}
+  );
+
+  if(error){
+    alert("Σφάλμα: " + error.message);
+    button.disabled = false;
+    return;
+  }
+
+  await loadRanking();
+});
 
   control.appendChild(button);
   container.prepend(control);

@@ -156,7 +156,7 @@ async function refreshAuth(){
   if(!currentUser){status.textContent="Δεν είσαι συνδεδεμένος.";return;}
 const {data:profile,error}=await supabaseClient.from("players").select("id,full_name,status,is_admin").eq("auth_user_id",currentUser.id).maybeSingle();
   if(error){status.textContent="Συνδέθηκες, αλλά δεν φορτώθηκε το προφίλ: "+error.message;return;}
-  if(!profile){status.textContent="Συνδέθηκες. Δεν βρέθηκε ακόμη προφίλ παίκτη.";return;},
+  if(!profile){status.textContent="Συνδέθηκες. Δεν βρέθηκε ακόμη προφίλ παίκτη.";return;}
   currentProfile = profile;
 await loadChallenges();
   status.textContent=`Συνδεδεμένος ως ${profile.full_name}. Κατάσταση: ${profile.status==="approved"?"Εγκεκριμένος":"Αναμονή έγκρισης"}. ${profile.is_admin?"Ρόλος: Διαχειριστής.":""}`;

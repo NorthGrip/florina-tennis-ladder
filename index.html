@@ -143,6 +143,7 @@ function setAuthMessage(message,isError=false){
 }
 
 
+
 function renderPlayers(){
   const leaderboard = document.getElementById("leaderboard");
   const total = document.getElementById("total");
@@ -155,18 +156,71 @@ function renderPlayers(){
     ? players.map(p => `
         <div class="player">
           <span class="rank">${p.position}</span>
-          <span class="player-name">${escapeHTML(p.name)}</span>
+
+          <span class="player-name">
+            ${escapeHTML(p.name)}
+          </span>
+
           <span class="small">
             Νίκες: ${p.wins || 0} |
             Ήττες: ${p.losses || 0} |
             Πόντοι: ${p.points || 0}
           </span>
+
+          <span class="small">
+            ${p.is_available
+              ? "🟢 Διαθέσιμος"
+              : "⚪ Μη διαθέσιμος"}
+          </span>
         </div>
       `).join("")
     : '<p class="small">Δεν βρέθηκαν εγκεκριμένοι παίκτες.</p>';
+
+  showMyAvailabilityButton();
 }
 
+async function showMyAvailabilityButton(){
+  const oldButton = document.getElementById("my-availability-control");
+  if(oldButton) oldButton.remove();
 
+  const {data:{user}} = await supabaseClient.auth.getUser();
+
+  if(!user) return;
+
+  const {data:profile,error} = await supabaseClient
+    .from("players")
+    .select("id,is_available")
+    .eq("auth_user_id",user.id)
+    .eq("status","approved")
+    .maybeSingle();
+
+  if(error || !profile || profile.is_admin) return;
+
+  const container = document.getElementById("leaderboard");
+  if(!container) return;
+
+  const control = document.createElement("div");
+  control.id = "my-availability-control";
+  control.className = "player";
+
+  const button = document.createElement("button");
+  button.textContent = profile.is_available
+    ? "Δήλωσε μη διαθέσιμος"
+    : "Δήλωσε διαθέσιμος";
+
+  button.onclick = async () => {
+    button.disabled = true;
+
+    try{
+      await updateMyAvailability(!profile.is_available);
+    }finally{
+      button.disabled = false;
+    }
+  };
+
+  control.appendChild(button);
+  container.prepend(control);
+}
 
 
 async function loadRanking(){

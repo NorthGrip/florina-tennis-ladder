@@ -154,11 +154,14 @@ async function refreshAuth(){
   document.getElementById("signed-in-controls").classList.toggle("hidden",!currentUser);
   document.getElementById("admin-section").classList.add("hidden");
   if(!currentUser){status.textContent="Δεν είσαι συνδεδεμένος.";return;}
-  const {data:profile,error}=await supabaseClient.from("players").select("full_name,status,is_admin").eq("auth_user_id",currentUser.id).maybeSingle();
+const {data:profile,error}=await supabaseClient.from("players").select("id,full_name,status,is_admin").eq("auth_user_id",currentUser.id).maybeSingle();
   if(error){status.textContent="Συνδέθηκες, αλλά δεν φορτώθηκε το προφίλ: "+error.message;return;}
-  if(!profile){status.textContent="Συνδέθηκες. Δεν βρέθηκε ακόμη προφίλ παίκτη.";return;}
+  if(!profile){status.textContent="Συνδέθηκες. Δεν βρέθηκε ακόμη προφίλ παίκτη.";return;},
+  currentProfile = profile;
+await loadChallenges();
   status.textContent=`Συνδεδεμένος ως ${profile.full_name}. Κατάσταση: ${profile.status==="approved"?"Εγκεκριμένος":"Αναμονή έγκρισης"}. ${profile.is_admin?"Ρόλος: Διαχειριστής.":""}`;
   if(profile.is_admin&&profile.status==="approved"){document.getElementById("admin-section").classList.remove("hidden");await loadPendingPlayers();}
+await loadChallenges();
 }
 async function loadPendingPlayers(){
   const list=document.getElementById("pending-list");list.textContent="Φόρτωση αιτήσεων…";
@@ -198,6 +201,166 @@ document.getElementById("logout-button").addEventListener("click",async()=>{
   const {error}=await supabaseClient.auth.signOut();if(error){setAuthMessage("Δεν έγινε αποσύνδεση: "+error.message,true);return;}
   setAuthMessage("Έγινες αποσύνδεση.");await refreshAuth();
 });
+  
+function challengeStatusLabel(status){
+  return ({
+    pending:"Σε αναμονή",
+    accepted:"Αποδεκτή",
+    rejected:"Απορρίφθηκε"
+  })[status] || status;
+}
+
+async function loadChallenges(){
+  const notice=document.getElementById("challenge-login-notice");
+  const controls=document.getElementById("challenge-controls");
+  const list=document.getElementById("challenges-list");
+  const select=document.getElementById("opponent-select");
+
+  if(!currentUser){
+    notice.classList.remove("hidden");
+    notice.textContent="Συνδέσου για να δημιουργήσεις ή να δεις τις προκλήσεις σου.";
+    controls.classList.add("hidden");
+    return;
+  }
+
+  if(!currentProfile || currentProfile.status!=="approved"){
+    notice.classList.remove("hidden");
+    notice.textContent="Η συμμετοχή στις προκλήσεις ενεργοποιείται μετά την έγκριση του λογαριασμού σου.";
+    controls.classList.add("hidden");
+    return;
+  }
+
+  notice.classList.add("hidden");
+  controls.classList.remove("hidden");
+
+  const me=players.find(p=>p.id===currentProfile.id);
+  select.innerHTML='<option value="">Επίλεξε παίκτη</option>';
+
+  if(me){
+    players
+      .filter(p=>p.position<me.position && me.position-p.position<=3)
+      .sort((a,b)=>a.position-b.position)
+      .forEach(p=>{
+        const option=document.createElement("option");
+        option.value=p.id;
+        option.textContent=`${p.position}. ${p.name}`;
+        select.appendChild(option);
+      });
+  }
+
+  list.textContent="Φόρτωση προκλήσεων…";
+
+  const {data,error}=await supabaseClient
+    .from("challenges")
+    .select("id,challenger_id,opponent_id,status,proposed_at,created_at")
+    .order("created_at",{ascending:false});
+
+  if(error){
+    list.textContent="Σφάλμα φόρτωσης: "+error.message;
+    return;
+  }
+
+  if(!data || !data.length){
+    list.innerHTML='<p class="small">Δεν υπάρχουν ακόμη προκλήσεις.</p>';
+    return;
+  }
+
+  list.innerHTML=data.map(c=>{
+    const challenger=players.find(p=>p.id===c.challenger_id);
+    const opponent=players.find(p=>p.id===c.opponent_id);
+    const isReceived=c.opponent_id===currentProfile.id;
+    const canRespond=isReceived && c.status==="pending";
+
+    return `
+      <div class="pending-item">
+        <div>
+          <strong>${escapeHTML(challenger?.name||"Παίκτης")}</strong>
+          <span class="small"> → </span>
+          <strong>${escapeHTML(opponent?.name||"Παίκτης")}</strong>
+          <div class="small">
+            ${challengeStatusLabel(c.status)}
+            · ${new Date(c.proposed_at||c.created_at).toLocaleDateString("el-GR")}
+          </div>
+        </div>
+        ${canRespond?`
+          <div class="actions">
+            <button class="action respond-button" data-id="${escapeHTML(c.id)}" data-response="accepted">Αποδοχή</button>
+            <button class="action danger respond-button" data-id="${escapeHTML(c.id)}" data-response="rejected">Απόρριψη</button>
+          </div>
+        `:""}
+      </div>
+    `;
+  }).join("");
+
+  list.querySelectorAll(".respond-button").forEach(button=>{
+    button.addEventListener("click",()=>respondToChallenge(button));
+  });
+}
+
+document.getElementById("create-challenge-button").addEventListener("click",async()=>{
+  const select=document.getElementById("opponent-select");
+  const message=document.getElementById("challenge-message");
+  const opponentId=select.value;
+
+  if(!currentProfile || currentProfile.status!=="approved"){
+    message.textContent="Χρειάζεται εγκεκριμένος λογαριασμός.";
+    return;
+  }
+
+  if(!opponentId){
+    message.textContent="Επίλεξε πρώτα αντίπαλο.";
+    return;
+  }
+
+  const button=document.getElementById("create-challenge-button");
+  button.disabled=true;
+  message.textContent="Αποστολή πρόκλησης…";
+
+  const {error}=await supabaseClient
+    .from("challenges")
+    .insert({
+      challenger_id:currentProfile.id,
+      opponent_id:opponentId,
+      status:"pending",
+      proposed_at:new Date().toISOString()
+    });
+
+  button.disabled=false;
+
+  if(error){
+    message.textContent="Δεν δημιουργήθηκε η πρόκληση: "+error.message;
+    return;
+  }
+
+  message.textContent="Η πρόκληση στάλθηκε επιτυχώς!";
+  select.value="";
+  await loadChallenges();
+});
+
+async function respondToChallenge(button){
+  const id=button.dataset.id;
+  const response=button.dataset.response;
+  const list=document.getElementById("challenges-list");
+
+  button.disabled=true;
+
+  const {error}=await supabaseClient.rpc(
+    "respond_to_ladder_challenge",
+    {
+      target_challenge_id:id,
+      target_response:response
+    }
+  );
+
+  if(error){
+    alert("Δεν καταχωρήθηκε η απάντηση: "+error.message);
+    button.disabled=false;
+    return;
+  }
+
+  await loadChallenges();
+}
+
 async function startApp(){
   const leaderboard=document.getElementById("leaderboard");
   if(!window.supabase||typeof window.supabase.createClient!=="function"){leaderboard.textContent="Δεν φορτώθηκε η βιβλιοθήκη Supabase.";return;}

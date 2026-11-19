@@ -161,34 +161,60 @@ function renderPlayers(){
     : '<p class="small">Δεν βρέθηκαν εγκεκριμένοι παίκτες.</p>';
 }
 
-const {data:matchCount,error:matchesError}=await supabaseClient
-  .from("match_count_public")
-  .select("total_matches")
-  .single();
 
-if(matchesError) throw matchesError;
+async function loadRanking(){
+  const leaderboard = document.getElementById("leaderboard");
+  const message = document.getElementById("connection-message");
 
-renderPlayers();
-document.getElementById("matches").textContent=
-  String(matchCount?.total_matches||0);
-message.classList.add("hidden");
-message.classList.remove("error");
-renderPlayers();
-document.getElementById("matches").textContent=String(count||0);
-message.classList.add("hidden");
-message.classList.remove("error");
-    if(!players.length){message.textContent="Η σύνδεση λειτουργεί, αλλά δεν βρέθηκαν παίκτες.";message.classList.remove("hidden");}
-}catch(error){
-  console.error("ΣΦΑΛΜΑ ΚΑΤΑΤΑΞΗΣ:", error);
+  try{
+    const {data,error} = await supabaseClient
+      .from("ladder_public")
+      .select("position,player_id,full_name,wins,losses,points")
+      .order("position",{ascending:true});
 
-  leaderboard.textContent="Δεν ήταν δυνατή η φόρτωση της κατάταξης.";
+    if(error) throw error;
 
-  message.textContent="Σφάλμα βάσης δεδομένων: "+
-    (error?.message || JSON.stringify(error));
+    players = (data || [])
+      .filter(r => r.player_id && r.full_name)
+      .map(r => ({
+        id:r.player_id,
+        position:r.position,
+        name:r.full_name,
+        wins:Number(r.wins || 0),
+        losses:Number(r.losses || 0),
+        points:Number(r.points || 0)
+      }));
 
-  message.classList.remove("hidden");
-  message.classList.add("error");
-}}
+    const {data:matchCount,error:matchesError} = await supabaseClient
+      .from("match_count_public")
+      .select("total_matches")
+      .single();
+
+    if(matchesError) throw matchesError;
+
+    renderPlayers();
+
+    document.getElementById("matches").textContent =
+      String(matchCount?.total_matches || 0);
+
+    message.classList.add("hidden");
+    message.classList.remove("error");
+
+    if(!players.length){
+      message.textContent = "Η σύνδεση λειτουργεί, αλλά δεν βρέθηκαν παίκτες.";
+      message.classList.remove("hidden");
+    }
+
+  }catch(error){
+    console.error("ΣΦΑΛΜΑ ΚΑΤΑΤΑΞΗΣ:", error);
+    leaderboard.textContent = "Δεν ήταν δυνατή η φόρτωση της κατάταξης.";
+    message.textContent = "Σφάλμα βάσης δεδομένων: " +
+      (error?.message || JSON.stringify(error));
+    message.classList.remove("hidden");
+    message.classList.add("error");
+  }
+}
+
  
 
 async function refreshAuth(){

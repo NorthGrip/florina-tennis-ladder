@@ -274,10 +274,49 @@ async function loadAllPlayers(){
           ${p.is_admin ? " · Διαχειριστής" : ""}
         </div>
       </div>
+
+      ${!p.is_admin && p.status !== "archived" ? `
+        <button
+          class="action archive-player-button"
+          data-player-id="${escapeHTML(p.id)}">
+          Αρχειοθέτηση
+        </button>
+      ` : ""}
     </div>
   `).join("");
+
+  list.querySelectorAll(".archive-player-button").forEach(button => {
+    button.addEventListener("click", async () => {
+      const playerId = button.dataset.playerId;
+
+      if(!confirm("Θέλεις σίγουρα να αρχειοθετήσεις αυτόν τον παίκτη;")) {
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "Αρχειοθέτηση…";
+
+      const {error} = await supabaseClient.rpc(
+        "archive_ladder_player",
+        {target_player_id: playerId}
+      );
+
+      if(error){
+        alert("Σφάλμα αρχειοθέτησης: " + error.message);
+        button.disabled = false;
+        button.textContent = "Αρχειοθέτηση";
+        return;
+      }
+
+      alert("Ο παίκτης αρχειοθετήθηκε επιτυχώς.");
+
+      await loadRanking();
+      await loadAllPlayers();
+      await loadPendingPlayers();
+      await loadChallenges();
+    });
+  });
 }
- 
 async function approvePlayer(playerId,button){
   button.disabled=true;button.textContent="Έγκριση…";
   const {data,error}=await supabaseClient.rpc("approve_ladder_player",{target_player_id:playerId});

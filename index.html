@@ -48,9 +48,38 @@
     <div id="leaderboard" class="loading">Γίνεται σύνδεση με τη βάση δεδομένων…</div><div id="connection-message" class="notice hidden"></div>
   </section>
   <section id="challenges" class="panel hidden">
-    <h2>Προκλήσεις</h2><p class="intro">Ένας παίκτης μπορεί να προκαλέσει παίκτη που βρίσκεται έως τρεις θέσεις ψηλότερα.</p>
-    <div class="notice">Η ηλεκτρονική δημιουργία και αποδοχή προκλήσεων θα ενεργοποιηθεί σε επόμενο στάδιο.</div>
-  </section>
+  <h2>Προκλήσεις</h2>
+  <p class="intro">
+    Προκάλεσε έναν από τους τρεις παίκτες που βρίσκονται ψηλότερα από εσένα.
+  </p>
+
+  <div id="challenge-login-notice" class="notice">
+    Συνδέσου για να δημιουργήσεις ή να δεις τις προκλήσεις σου.
+  </div>
+
+  <div id="challenge-controls" class="hidden">
+    <h3>Νέα πρόκληση</h3>
+    <div class="field">
+      <label for="opponent-select">Επίλεξε αντίπαλο</label>
+      <select id="opponent-select"
+        style="width:100%;padding:12px;border:1px solid var(--line);border-radius:9px;font-size:16px">
+        <option value="">Επίλεξε παίκτη</option>
+      </select>
+    </div>
+    <div class="actions">
+      <button id="create-challenge-button" class="action" type="button">
+        Αποστολή πρόκλησης
+      </button>
+    </div>
+
+    <div id="challenge-message" class="statusline"></div>
+
+    <h3>Οι προκλήσεις μου</h3>
+    <div id="challenges-list" class="loading">
+      Φόρτωση προκλήσεων…
+    </div>
+  </div>
+</section>
   <section id="players" class="panel hidden">
     <h2>Παίκτες</h2><p class="intro">Εγγραφή νέου παίκτη, σύνδεση και έγκριση από διαχειριστή.</p>
     <div id="auth-status" class="notice">Δεν είσαι συνδεδεμένος.</div>

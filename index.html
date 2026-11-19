@@ -288,67 +288,22 @@ async function loadRanking(){
 }
 
 
- async function updateMyAvailability(isAvailable) {
-  const { data, error } = await supabase.rpc(
+ 
+async function updateMyAvailability(isAvailable) {
+  const { data, error } = await supabaseClient.rpc(
     "set_ladder_availability",
     { target_is_available: isAvailable }
   );
 
   if (error) {
-    alert("Σφάλμα: " + error.message);
+    console.error("Σφάλμα αλλαγής διαθεσιμότητας:", error);
+    alert("Δεν έγινε η αλλαγή: " + error.message);
     return;
   }
 
-  alert(data || "Η διαθεσιμότητα ενημερώθηκε.");
+  alert("Η διαθεσιμότητα ενημερώθηκε!");
   await loadRanking();
 }
-
-async function refreshAuth(){
-  const {data:{session}} = await supabaseClient.auth.getSession();
-  currentUser = session?.user || null;
-  currentProfile = null;
-
-  const status = document.getElementById("auth-status");
-  document.getElementById("auth-forms").classList.toggle("hidden", !!currentUser);
-  document.getElementById("signed-in-controls").classList.toggle("hidden", !currentUser);
-  document.getElementById("admin-section").classList.add("hidden");
-
-  if(!currentUser){
-    status.textContent = "Δεν είσαι συνδεδεμένος.";
-    await loadChallenges();
-    return;
-  }
-
-  const {data:profile, error} = await supabaseClient
-    .from("players")
-    .select("id,full_name,status,is_admin")
-    .eq("auth_user_id", currentUser.id)
-    .maybeSingle();
-
-  if(error){
-    status.textContent = "Συνδέθηκες, αλλά δεν φορτώθηκε το προφίλ: " + error.message;
-    return;
-  }
-
-  if(!profile){
-    status.textContent = "Συνδέθηκες. Δεν βρέθηκε ακόμη προφίλ παίκτη.";
-    return;
-  }
-
-  currentProfile = profile;
-
-  status.textContent = `Συνδεδεμένος ως ${profile.full_name}. Κατάσταση: ${profile.status==="approved"?"Εγκεκριμένος":"Αναμονή έγκρισης"}. ${profile.is_admin?"Ρόλος: Διαχειριστής.":""}`;
-
- if(profile.is_admin && profile.status==="approved"){
-  document.getElementById("admin-section").classList.remove("hidden");
-  await loadPendingPlayers();
-  await loadPendingResults();
-  await loadAllPlayers();
-}
-
-  await loadChallenges();
-}
-
 
 async function loadPendingPlayers(){
   const list=document.getElementById("pending-list");list.textContent="Φόρτωση αιτήσεων…";

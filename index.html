@@ -184,7 +184,7 @@ async function showMyAvailabilityButton(){
   if(oldButton) oldButton.remove();
 
   const {data:{user}} = await supabaseClient.auth.getUser();
-
+console.log("Συνδεδεμένος χρήστης:", user);
   if(!user) return;
 
   const {data:profile,error} = await supabaseClient

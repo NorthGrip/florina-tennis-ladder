@@ -88,70 +88,97 @@ const supabaseClient = window.supabase.createClient(
 );
 
 
-let players=[
-"Ταμουτσέλης Παντελής",
-"Ταμουτσέλης Ορφέας",
-"Μπελμπάσης Πέτρος",
-"Ταρανίδης Δημήτριος",
-"Χριστάκης Σωτήρης"
-].map((name,id)=>({id,name,wins:0,losses:0,points:0}));
+let players = [];
+let matches = 0;
 
-let matches=0;
-
-function showTab(id){
-["ranking","challenges","players"].forEach(x=>{
-document.getElementById(x).hidden=x!==id;
-});
+function showTab(id) {
+  ["ranking", "challenges", "players"].forEach(x => {
+    document.getElementById(x).hidden = x !== id;
+  });
 }
 
-function render(){
-document.getElementById("total").textContent=players.length+" / 35";
-document.getElementById("matches").textContent=matches;
-document.getElementById("leaderboard").innerHTML=players.map((p,i)=>`
-<div class="player">
-<span class="rank">${i+1}</span>
-<span class="player-name">${p.name}<div class="small">${p.wins} νίκες · ${p.losses} ήττες</div></span>
-<strong>${p.points} π.</strong>
-</div>`).join("")+
-Array.from({length:35-players.length},(_,i)=>`
-<div class="player"><span class="rank">${players.length+i+1}</span>
-<span class="small">Κενή θέση</span></div>`).join("");
-
-let options=players.map((p,i)=>`<option value="${i}">${i+1}. ${p.name}</option>`).join("");
-document.getElementById("challenger").innerHTML=options;
-document.getElementById("opponent").innerHTML=options;
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  })[char]);
 }
 
-function recordMatch(){
-let a=+document.getElementById("challenger").value;
-let b=+document.getElementById("opponent").value;
-let msg=document.getElementById("message");
-if(a<=b){msg.textContent="Ο παίκτης που προκαλεί πρέπει να βρίσκεται χαμηλότερα.";return;}
-if(a-b>3){msg.textContent="Επιτρέπονται μόνο 3 θέσεις διαφορά.";return;}
-let win=document.getElementById("winner").value==="challenger"?a:b;
-let lose=win===a?b:a;
-players[win].wins++;
-players[win].points+=3;
-players[lose].losses++;
-players[lose].points++;
-let p=players.splice(win,1)[0];
-players.splice(lose,0,p);
-matches++;
-msg.textContent="Ο αγώνας καταχωρήθηκε επιτυχώς.";
+function render() {
+  document.getElementById("total").textContent =
+    players.length + " / 35";
+
+  document.getElementById("matches").textContent = "—";
+
+  document.getElementById("leaderboard").innerHTML =
+    players.map(p => `
+      <div class="player">
+        <span class="rank">${p.position}</span>
+        <span class="player-name">
+          ${escapeHTML(p.name)}
+          <div class="small">${p.wins} νίκες · ${p.losses} ήττες</div>
+        </span>
+        <strong>${p.points} π.</strong>
+      </div>
+    `).join("") +
+    Array.from({length: 35 - players.length}, (_, i) => `
+      <div class="player">
+        <span class="rank">${players.length + i + 1}</span>
+        <span class="small">Κενή θέση</span>
+      </div>
+    `).join("");
+
+  const options = players.map(p =>
+    `<option value="${p.position}">${p.position}. ${escapeHTML(p.name)}</option>`
+  ).join("");
+
+  document.getElementById("challenger").innerHTML = options;
+  document.getElementById("opponent").innerHTML = options;
+}
+
+async function loadRanking() {
+  const leaderboard = document.getElementById("leaderboard");
+  leaderboard.textContent = "Φόρτωση κατάταξης...";
+
+  const { data, error } = await supabaseClient
+    .from("ladder_public")
+    .select("position, player_id, full_name, wins, losses, points")
+    .order("position");
+
+  if (error) {
+    leaderboard.textContent =
+      "Δεν ήταν δυνατή η φόρτωση της κατάταξης. " + error.message;
+    return;
+  }
+
+  players = data
+    .filter(p => p.player_id && p.full_name)
+    .map(p => ({
+      position: p.position,
+      id: p.player_id,
+      name: p.full_name,
+      wins: p.wins,
+      losses: p.losses,
+      points: p.points
+    }));
+
+  render();
+}
+
+function recordMatch() {
+  document.getElementById("message").textContent =
+    "Η ηλεκτρονική καταχώρηση αγώνων θα ενεργοποιηθεί στο επόμενο στάδιο.";
+}
+
+function addPlayer() {
+  alert("Η εγγραφή νέων παικτών θα ενεργοποιηθεί στο επόμενο στάδιο.");
+}
+
 render();
-}
-
-function addPlayer(){
-let input=document.getElementById("newPlayer");
-let name=input.value.trim();
-if(!name)return alert("Συμπλήρωσε όνομα.");
-if(players.length>=35)return alert("Συμπληρώθηκαν οι 35 θέσεις.");
-players.push({id:Date.now(),name,wins:0,losses:0,points:0});
-input.value="";
-render();
-}
-
-render();
+loadRanking();
 </script>
 </body>
 </html>

@@ -223,6 +223,7 @@ async function loadPendingPlayers(){
   list.querySelectorAll(".approve-button").forEach(button=>button.addEventListener("click",()=>approvePlayer(button.dataset.playerId,button)));
 }
  
+
 async function loadAllPlayers(){
   const list = document.getElementById("all-players-list");
   if(!list) return;
@@ -276,14 +277,61 @@ async function loadAllPlayers(){
       </div>
 
       ${!p.is_admin && p.status !== "archived" ? `
-        <button
-          class="action archive-player-button"
-          data-player-id="${escapeHTML(p.id)}">
-          Αρχειοθέτηση
-        </button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button
+            class="action edit-player-button"
+            data-player-id="${escapeHTML(p.id)}">
+            Επεξεργασία
+          </button>
+
+          <button
+            class="action archive-player-button"
+            data-player-id="${escapeHTML(p.id)}">
+            Αρχειοθέτηση
+          </button>
+        </div>
       ` : ""}
     </div>
   `).join("");
+
+  list.querySelectorAll(".edit-player-button").forEach(button => {
+    button.addEventListener("click", async () => {
+      const player = people.find(p => p.id === button.dataset.playerId);
+      if(!player) return;
+
+      const newName = prompt("Ονοματεπώνυμο:", player.full_name);
+      if(newName === null) return;
+
+      if(!newName.trim()){
+        alert("Το ονοματεπώνυμο δεν μπορεί να είναι κενό.");
+        return;
+      }
+
+      const newPhone = prompt("Κινητό τηλέφωνο:", player.phone || "");
+      if(newPhone === null) return;
+
+      button.disabled = true;
+
+      const {error} = await supabaseClient.rpc(
+        "update_ladder_player",
+        {
+          target_player_id: player.id,
+          new_full_name: newName.trim(),
+          new_phone: newPhone.trim()
+        }
+      );
+
+      if(error){
+        alert("Σφάλμα επεξεργασίας: " + error.message);
+        button.disabled = false;
+        return;
+      }
+
+      alert("Τα στοιχεία του παίκτη ενημερώθηκαν.");
+      await loadAllPlayers();
+      await loadRanking();
+    });
+  });
 
   list.querySelectorAll(".archive-player-button").forEach(button => {
     button.addEventListener("click", async () => {
@@ -317,6 +365,7 @@ async function loadAllPlayers(){
     });
   });
 }
+
 async function approvePlayer(playerId,button){
   button.disabled=true;button.textContent="Έγκριση…";
   const {data,error}=await supabaseClient.rpc("approve_ladder_player",{target_player_id:playerId});

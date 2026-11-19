@@ -221,7 +221,20 @@ async function loadRanking(){
   }
 }
 
- 
+ async function updateMyAvailability(isAvailable) {
+  const { data, error } = await supabase.rpc(
+    "set_ladder_availability",
+    { target_is_available: isAvailable }
+  );
+
+  if (error) {
+    alert("Σφάλμα: " + error.message);
+    return;
+  }
+
+  alert(data || "Η διαθεσιμότητα ενημερώθηκε.");
+  await loadRanking();
+}
 
 async function refreshAuth(){
   const {data:{session}} = await supabaseClient.auth.getSession();

@@ -101,12 +101,19 @@
     </div>
     <div id="signed-in-controls" class="hidden"><div class="actions"><button id="logout-button" class="action secondary" type="button">Αποσύνδεση</button></div></div>
     <div id="auth-message" class="statusline" role="status"></div>
-    <div id="admin-section" class="hidden">
-      <h3>Αιτήσεις προς έγκριση</h3><p class="small">Με την έγκριση, ο παίκτης προστίθεται στην επόμενη θέση μετά τον τελευταίο.</p>
-      <div id="pending-list" class="loading">Φόρτωση αιτήσεων…</div>
-    </div>
-    <h3>Κατάταξη παικτών</h3><div id="players-list" class="loading">Τα στοιχεία θα εμφανιστούν μετά τη φόρτωση της κατάταξης.</div>
-  </section>
+   
+<div id="admin-section" class="hidden">
+  <h3>Αιτήσεις προς έγκριση</h3>
+  <p class="small">Με την έγκριση, ο παίκτης προστίθεται στην επόμενη θέση μετά τον τελευταίο.</p>
+  <div id="pending-list" class="loading">Φόρτωση αιτήσεων…</div>
+
+  <hr>
+
+  <h3>Διαχείριση όλων των παικτών</h3>
+  <p class="small">Στοιχεία επικοινωνίας, κατάσταση εγγραφής και διαχείριση λογαριασμών.</p>
+  <div id="all-players-list" class="loading">Φόρτωση παικτών…</div>
+</div>
+
 </main>
 <footer>FLORINA TENNIS LADDER · NORTHGRIP</footer>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>

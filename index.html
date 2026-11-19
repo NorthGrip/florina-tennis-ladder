@@ -222,6 +222,62 @@ async function loadPendingPlayers(){
   list.innerHTML=data.map(p=>`<div class="pending-item"><div><strong>${escapeHTML(p.full_name)}</strong><div class="small">${escapeHTML(p.email||"")} ${p.phone?"· "+escapeHTML(p.phone):""}</div></div><button class="action approve-button" data-player-id="${escapeHTML(p.id)}">Έγκριση</button></div>`).join("");
   list.querySelectorAll(".approve-button").forEach(button=>button.addEventListener("click",()=>approvePlayer(button.dataset.playerId,button)));
 }
+ 
+async function loadAllPlayers(){
+  const list = document.getElementById("all-players-list");
+  if(!list) return;
+
+  list.textContent = "Φόρτωση παικτών…";
+
+  const {data:people, error} = await supabaseClient
+    .from("players")
+    .select("id,full_name,email,phone,status,created_at,is_admin")
+    .order("created_at", {ascending:true});
+
+  if(error){
+    list.textContent = "Σφάλμα φόρτωσης παικτών: " + error.message;
+    return;
+  }
+
+  const {data:positions, error:positionError} = await supabaseClient
+    .from("ladder_positions")
+    .select("position,player_id");
+
+  if(positionError){
+    list.textContent = "Σφάλμα φόρτωσης κατάταξης: " + positionError.message;
+    return;
+  }
+
+  const positionMap = {};
+  (positions || []).forEach(p => {
+    if(p.player_id) positionMap[p.player_id] = p.position;
+  });
+
+  if(!people || !people.length){
+    list.textContent = "Δεν υπάρχουν παίκτες.";
+    return;
+  }
+
+  list.innerHTML = people.map(p => `
+    <div class="pending-item">
+      <div>
+        <strong>${escapeHTML(p.full_name)}</strong>
+        <div class="small">
+          Email: ${escapeHTML(p.email || "Δεν έχει δηλωθεί")}
+        </div>
+        <div class="small">
+          Κινητό: ${escapeHTML(p.phone || "Δεν έχει δηλωθεί")}
+        </div>
+        <div class="small">
+          Θέση: ${positionMap[p.id] || "Χωρίς θέση"}
+          · Κατάσταση: ${escapeHTML(p.status)}
+          ${p.is_admin ? " · Διαχειριστής" : ""}
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+ 
 async function approvePlayer(playerId,button){
   button.disabled=true;button.textContent="Έγκριση…";
   const {data,error}=await supabaseClient.rpc("approve_ladder_player",{target_player_id:playerId});

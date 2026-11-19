@@ -262,6 +262,9 @@ async function loadChallenges(){
   controls.classList.remove("hidden");
 
   const me=players.find(p=>p.id===currentProfile.id);
+  console.log("MY PROFILE:", currentProfile);
+console.log("MY LADDER PLAYER:", me);
+console.log("ALL LADDER PLAYERS:", players);
   select.innerHTML='<option value="">Επίλεξε παίκτη</option>';
 
   if(me){

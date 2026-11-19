@@ -179,32 +179,27 @@ function renderPlayers(){
   showMyAvailabilityButton();
 }
 
+
 async function showMyAvailabilityButton(){
   const oldButton = document.getElementById("my-availability-control");
   if(oldButton) oldButton.remove();
 
   const {data:{user}} = await supabaseClient.auth.getUser();
-console.log("Συνδεδεμένος χρήστης:", user);
   if(!user) return;
 
   const {data:profile,error} = await supabaseClient
     .from("players")
-   .select("id,is_available,is_admin")
+    .select("id,is_available,is_admin")
     .eq("auth_user_id",user.id)
     .eq("status","approved")
     .maybeSingle();
 
   if(error){
-  console.error("Σφάλμα προφίλ διαθεσιμότητας:", error);
-  return;
-}
+    console.error("Σφάλμα προφίλ διαθεσιμότητας:", error);
+    return;
+  }
 
-if(!profile){
-  console.log("Δεν βρέθηκε εγκεκριμένο προφίλ παίκτη.");
-  return;
-}
-
-
+  if(!profile) return;
 
   const container = document.getElementById("leaderboard");
   if(!container) return;
@@ -212,37 +207,55 @@ if(!profile){
   const control = document.createElement("div");
   control.id = "my-availability-control";
   control.className = "player";
+  control.style.textAlign = "center";
+  control.style.padding = "18px";
+  control.style.marginBottom = "16px";
+  control.style.background = "#f8fafc";
+  control.style.borderRadius = "12px";
 
   const button = document.createElement("button");
-button.type = "button";
-button.textContent = profile.is_available
-  ? "Δήλωσε μη διαθέσιμος"
-  : "Δήλωσε διαθέσιμος";
+  button.type = "button";
+  button.textContent = profile.is_available
+    ? "🟢 Δήλωσε μη διαθέσιμος"
+    : "⚪ Δήλωσε διαθέσιμος";
 
-button.style.cursor = "pointer";
-button.style.padding = "12px 20px";
-button.style.background = "#166534";
-button.style.color = "white";
-button.style.border = "none";
-button.style.borderRadius = "8px";
-button.style.fontWeight = "bold";
+  button.style.cursor = "pointer";
+  button.style.padding = "14px 24px";
+  button.style.background = profile.is_available ? "#166534" : "#475569";
+  button.style.color = "#ffffff";
+  button.style.border = "none";
+  button.style.borderRadius = "10px";
+  button.style.fontSize = "16px";
+  button.style.fontWeight = "700";
+  button.style.boxShadow = "0 3px 8px rgba(0,0,0,0.18)";
+  button.style.transition = "0.2s";
 
-button.addEventListener("click", async function(){
-  button.disabled = true;
+  button.addEventListener("mouseenter", () => {
+    button.style.opacity = "0.85";
+  });
 
-  const {error} = await supabaseClient.rpc(
-    "set_ladder_availability",
-    {target_is_available: !profile.is_available}
-  );
+  button.addEventListener("mouseleave", () => {
+    button.style.opacity = "1";
+  });
 
-  if(error){
-    alert("Σφάλμα: " + error.message);
-    button.disabled = false;
-    return;
-  }
+  button.addEventListener("click", async function(){
+    button.disabled = true;
+    button.style.opacity = "0.6";
 
-  await loadRanking();
-});
+    const {error} = await supabaseClient.rpc(
+      "set_ladder_availability",
+      {target_is_available: !profile.is_available}
+    );
+
+    if(error){
+      alert("Σφάλμα: " + error.message);
+      button.disabled = false;
+      button.style.opacity = "1";
+      return;
+    }
+
+    await loadRanking();
+  });
 
   control.appendChild(button);
   container.prepend(control);

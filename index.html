@@ -887,6 +887,72 @@ async function respondToChallenge(button){
   await loadChallenges();
 }
 
+async function refreshAuth(){
+  try{
+    const {data:{user},error} = await supabaseClient.auth.getUser();
+
+    if(error) throw error;
+
+    const authStatus = document.getElementById("auth-status");
+    const authForms = document.getElementById("auth-forms");
+    const signedControls = document.getElementById("signed-in-controls");
+    const adminSection = document.getElementById("admin-section");
+
+    if(!user){
+      authStatus.textContent = "Δεν είσαι συνδεδεμένος.";
+      authForms.classList.remove("hidden");
+      signedControls.classList.add("hidden");
+      adminSection.classList.add("hidden");
+      return;
+    }
+
+    authForms.classList.add("hidden");
+    signedControls.classList.remove("hidden");
+
+    const {data:profile,error:profileError} = await supabaseClient
+      .from("players")
+      .select("full_name,status,is_admin")
+      .eq("auth_user_id",user.id)
+      .maybeSingle();
+
+    if(profileError) throw profileError;
+
+    if(!profile){
+      authStatus.textContent = "Δεν βρέθηκε προφίλ παίκτη.";
+      adminSection.classList.add("hidden");
+      return;
+    }
+
+    if(profile.status !== "approved"){
+      authStatus.textContent =
+        "Συνδεδεμένος: " + profile.full_name +
+        " — Η αίτησή σου περιμένει έγκριση.";
+      adminSection.classList.add("hidden");
+      return;
+    }
+
+    authStatus.textContent =
+      "Συνδεδεμένος ως " + profile.full_name;
+
+    if(profile.is_admin){
+      adminSection.classList.remove("hidden");
+      await loadPendingPlayers();
+      await loadPendingResults();
+      await loadAllPlayers();
+    }else{
+      adminSection.classList.add("hidden");
+    }
+
+    await loadChallenges();
+    await loadRanking();
+
+  }catch(error){
+    console.error("Σφάλμα ανανέωσης σύνδεσης:",error);
+    document.getElementById("auth-status").textContent =
+      "Σφάλμα σύνδεσης: " + error.message;
+  }
+}
+
 async function startApp(){
   const leaderboard=document.getElementById("leaderboard");
   if(!window.supabase||typeof window.supabase.createClient!=="function"){leaderboard.textContent="Δεν φορτώθηκε η βιβλιοθήκη Supabase.";return;}

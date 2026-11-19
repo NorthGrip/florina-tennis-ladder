@@ -189,12 +189,22 @@ async function showMyAvailabilityButton(){
 
   const {data:profile,error} = await supabaseClient
     .from("players")
-    .select("id,is_available")
+   .select("id,is_available,is_admin")
     .eq("auth_user_id",user.id)
     .eq("status","approved")
     .maybeSingle();
 
-  if(error || !profile || profile.is_admin) return;
+  if(error){
+  console.error("Σφάλμα προφίλ διαθεσιμότητας:", error);
+  return;
+}
+
+if(!profile){
+  console.log("Δεν βρέθηκε εγκεκριμένο προφίλ παίκτη.");
+  return;
+}
+
+if(profile.is_admin) return;
 
   const container = document.getElementById("leaderboard");
   if(!container) return;

@@ -196,6 +196,7 @@ async function loadRanking(){
 
     document.getElementById("matches").textContent =
       String(matchCount?.total_matches || 0);
+    console.log("ΑΡΙΘΜΟΣ ΑΓΩΝΩΝ:", matchCount);
 
     message.classList.add("hidden");
     message.classList.remove("error");

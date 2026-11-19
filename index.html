@@ -168,6 +168,7 @@ function renderPlayers(){
 
 
 
+
 async function loadRanking(){
   const leaderboard = document.getElementById("leaderboard");
   const message = document.getElementById("connection-message");
@@ -175,7 +176,7 @@ async function loadRanking(){
   try{
     const {data,error} = await supabaseClient
       .from("ladder_public")
-      .select("position,player_id,full_name,wins,losses,points")
+      .select("position,player_id,full_name,wins,losses,points,is_available")
       .order("position",{ascending:true});
 
     if(error) throw error;
@@ -188,7 +189,8 @@ async function loadRanking(){
         name:r.full_name,
         wins:Number(r.wins || 0),
         losses:Number(r.losses || 0),
-        points:Number(r.points || 0)
+        points:Number(r.points || 0),
+        is_available:r.is_available
       }));
 
     const {data:matchCount,error:matchesError} = await supabaseClient
@@ -201,7 +203,7 @@ async function loadRanking(){
     renderPlayers();
 
     document.getElementById("matches").textContent =
-  matchCount.total_matches;
+      matchCount.total_matches;
 
     message.classList.add("hidden");
     message.classList.remove("error");
@@ -220,6 +222,7 @@ async function loadRanking(){
     message.classList.add("error");
   }
 }
+
 
  async function updateMyAvailability(isAvailable) {
   const { data, error } = await supabase.rpc(

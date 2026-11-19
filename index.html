@@ -209,11 +209,12 @@ async function refreshAuth(){
 
   status.textContent = `Συνδεδεμένος ως ${profile.full_name}. Κατάσταση: ${profile.status==="approved"?"Εγκεκριμένος":"Αναμονή έγκρισης"}. ${profile.is_admin?"Ρόλος: Διαχειριστής.":""}`;
 
-  if(profile.is_admin && profile.status==="approved"){
-    document.getElementById("admin-section").classList.remove("hidden");
-    await loadPendingPlayers();
-    await loadAllPlayers();
-  }
+ if(profile.is_admin && profile.status==="approved"){
+  document.getElementById("admin-section").classList.remove("hidden");
+  await loadPendingPlayers();
+  await loadPendingResults();
+  await loadAllPlayers();
+}
 
   await loadChallenges();
 }

@@ -146,15 +146,51 @@ players=(data||[]).filter(r=>r.player_id&&r.full_name).map(r=>({id:r.player_id,p
     if(!players.length){message.textContent="Η σύνδεση λειτουργεί, αλλά δεν βρέθηκαν παίκτες.";message.classList.remove("hidden");}
   }catch(error){leaderboard.textContent="Δεν ήταν δυνατή η φόρτωση της κατάταξης.";message.textContent="Σφάλμα βάσης δεδομένων: "+(error.message||String(error));message.classList.remove("hidden");message.classList.add("error");console.error(error);}
 }
-  async function refreshAuth(){
-   currentProfile = profile;
-await loadChallenges();
-status.textContent=`Συνδεδεμένος ως ${profile.full_name}. Κατάσταση: ${profile.status==="approved"?"Εγκεκριμένος":"Αναμονή έγκρισης"}. ${profile.is_admin?"Ρόλος: Διαχειριστής.":""}`;
-if(profile.is_admin&&profile.status==="approved"){
-  document.getElementById("admin-section").classList.remove("hidden");
-  await loadPendingPlayers();
-}
+ 
+async function refreshAuth(){
+  const {data:{session}} = await supabaseClient.auth.getSession();
+  currentUser = session?.user || null;
+  currentProfile = null;
+
+  const status = document.getElementById("auth-status");
+  document.getElementById("auth-forms").classList.toggle("hidden", !!currentUser);
+  document.getElementById("signed-in-controls").classList.toggle("hidden", !currentUser);
+  document.getElementById("admin-section").classList.add("hidden");
+
+  if(!currentUser){
+    status.textContent = "Δεν είσαι συνδεδεμένος.";
+    await loadChallenges();
+    return;
   }
+
+  const {data:profile, error} = await supabaseClient
+    .from("players")
+    .select("id,full_name,status,is_admin")
+    .eq("auth_user_id", currentUser.id)
+    .maybeSingle();
+
+  if(error){
+    status.textContent = "Συνδέθηκες, αλλά δεν φορτώθηκε το προφίλ: " + error.message;
+    return;
+  }
+
+  if(!profile){
+    status.textContent = "Συνδέθηκες. Δεν βρέθηκε ακόμη προφίλ παίκτη.";
+    return;
+  }
+
+  currentProfile = profile;
+
+  status.textContent = `Συνδεδεμένος ως ${profile.full_name}. Κατάσταση: ${profile.status==="approved"?"Εγκεκριμένος":"Αναμονή έγκρισης"}. ${profile.is_admin?"Ρόλος: Διαχειριστής.":""}`;
+
+  if(profile.is_admin && profile.status==="approved"){
+    document.getElementById("admin-section").classList.remove("hidden");
+    await loadPendingPlayers();
+  }
+
+  await loadChallenges();
+}
+
 async function loadPendingPlayers(){
   const list=document.getElementById("pending-list");list.textContent="Φόρτωση αιτήσεων…";
   const {data,error}=await supabaseClient.from("players").select("id,full_name,email,phone,created_at").eq("status","pending").order("created_at",{ascending:true});

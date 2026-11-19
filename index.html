@@ -149,6 +149,7 @@ players=(data||[]).filter(r=>r.player_id&&r.full_name).map(r=>({id:r.player_id,p
 async function refreshAuth(){
   const {data:{session}}=await supabaseClient.auth.getSession();
   currentUser=session?.user||null;
+  currentProfile = null;
   const status=document.getElementById("auth-status");
   document.getElementById("auth-forms").classList.toggle("hidden",!!currentUser);
   document.getElementById("signed-in-controls").classList.toggle("hidden",!currentUser);

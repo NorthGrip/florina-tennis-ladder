@@ -1341,7 +1341,11 @@ document.getElementById("create-challenge-button").addEventListener("click", asy
 
 async function refreshAuth(){
   try{
-    const {data:{user},error} = await supabaseClient.auth.getUser();
+    const {data:{session},error} = await supabaseClient.auth.getSession();
+
+if(error) throw error;
+
+const user = session?.user || null;
 
     if(error) throw error;
     currentUser = user;

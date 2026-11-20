@@ -966,7 +966,7 @@ async function refreshAuth(){
 
     const {data:profile,error:profileError} = await supabaseClient
       .from("players")
-      .select("full_name,status,is_admin")
+      .select("id,full_name,status,is_admin")
       .eq("auth_user_id",user.id)
       .maybeSingle();
 

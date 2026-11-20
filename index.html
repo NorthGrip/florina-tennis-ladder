@@ -56,6 +56,235 @@
 }
 </style>
 
+
+<style>
+  /* NorthGrip visual refresh — presentation only; application logic is unchanged */
+  :root {
+    --green: #123b2d;
+    --green-2: #1f5a42;
+    --lime: #c8e36a;
+    --bg: #f2f5f1;
+    --card: #ffffff;
+    --text: #17251e;
+    --muted: #68766e;
+    --line: #e1e9e2;
+    --danger: #a43b35;
+  }
+
+  body {
+    font-family: 'Montserrat', Arial, Helvetica, sans-serif;
+    background:
+      radial-gradient(circle at 10% 0%, rgba(200,227,106,.12), transparent 28rem),
+      var(--bg);
+    line-height: 1.5;
+  }
+
+  header {
+    padding: 30px 18px 26px;
+    background: linear-gradient(135deg, #102d23 0%, #1c4b38 100%);
+    border-bottom: 5px solid var(--lime);
+  }
+
+  header .wrap { max-width: 960px; }
+  .brand {
+    text-align: center !important;
+    width: 100%;
+    margin: 0 auto 16px;
+    color: var(--lime);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 3px;
+  }
+
+  header h1 {
+    font-weight: 800;
+    letter-spacing: -1.2px;
+    line-height: 1.15;
+    text-align: center;
+  }
+
+  header img {
+    filter: drop-shadow(0 3px 8px rgba(0,0,0,.18));
+  }
+
+  .florina-subtitle {
+    font-family: 'Montserrat', sans-serif !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    letter-spacing: .8px !important;
+    text-transform: uppercase;
+    text-align: center !important;
+    width: 100%;
+    margin: 16px auto 0;
+    color: #e1ece4;
+  }
+
+  main.wrap { max-width: 960px; padding-top: 25px; }
+
+  .stat, .panel {
+    border: 1px solid var(--line);
+    border-radius: 17px;
+    box-shadow: 0 7px 22px rgba(18,59,45,.055);
+  }
+
+  .stat {
+    padding: 18px 20px;
+    background: linear-gradient(145deg, #fff, #f9fbf8);
+  }
+
+  .stat span {
+    font-weight: 600;
+    letter-spacing: .2px;
+  }
+
+  .stat strong {
+    color: var(--green);
+    font-size: 28px;
+    font-weight: 800;
+  }
+
+  #ladder-timer {
+    padding: 23px 18px;
+    border: 1px solid rgba(200,227,106,.65);
+    background: linear-gradient(145deg, #ffffff, #f5f8ed);
+  }
+
+  #ladder-timer h2 {
+    color: var(--green);
+    font-size: 22px;
+    font-weight: 800;
+  }
+
+  #ladder-timer-status { color: var(--muted); font-weight: 600; }
+  #ladder-countdown {
+    color: var(--green);
+    font-size: clamp(17px, 3.5vw, 25px) !important;
+    font-weight: 800;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  nav { gap: 9px; padding: 2px 1px 7px; }
+  nav button {
+    border: 1px solid #dce6dc;
+    padding: 11px 17px;
+    font-family: inherit;
+    font-size: 13px;
+    transition: background .18s ease, color .18s ease, transform .18s ease;
+  }
+  nav button.active {
+    background: var(--green);
+    box-shadow: 0 4px 12px rgba(18,59,45,.16);
+  }
+
+  .panel { padding: 21px; }
+  .panel h2 { color: var(--green); font-weight: 800; }
+  .intro { margin-top: 5px; }
+
+  /* Four pieces of player information: rank, name, record and availability */
+  .player {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 3px;
+    padding: 14px 9px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .player .rank {
+    grid-column: 1;
+    grid-row: 1 / 4;
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    background: #eaf1e6;
+    color: var(--green);
+    font-size: 14px;
+  }
+
+  .player .player-name {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  .player > span:nth-child(3) {
+    grid-column: 2;
+    grid-row: 2;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .player > span:nth-child(4) {
+    grid-column: 2;
+    grid-row: 3;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .action {
+    border-radius: 10px;
+    padding: 11px 16px;
+    font-family: inherit;
+    transition: filter .18s ease, transform .18s ease;
+  }
+  .action:hover { filter: brightness(1.06); }
+  .action:active { transform: translateY(1px); }
+  .action.secondary { background: #eaf1e6; }
+  input, select {
+    font-family: inherit;
+    border-color: #dce5dd !important;
+    border-radius: 10px !important;
+  }
+  input:focus, select:focus {
+    outline: 2px solid rgba(31,90,66,.18);
+    border-color: var(--green-2) !important;
+  }
+
+  .notice {
+    border: 1px solid #e2eadc;
+    border-radius: 11px;
+    background: #f2f7ed;
+  }
+  .pending-item {
+    padding: 14px 0;
+    border-bottom-color: var(--line);
+  }
+  footer {
+    color: #7a887f;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+  }
+
+  @media (max-width: 600px) {
+    header { padding: 25px 14px 22px; }
+    header h1 { font-size: clamp(22px, 6vw, 30px); letter-spacing: -.7px; }
+    header img { width: 54px !important; }
+    .brand { margin-bottom: 13px; }
+    .florina-subtitle { font-size: 12px !important; letter-spacing: .5px !important; }
+    main.wrap { padding-top: 17px; }
+    .stats { gap: 9px; }
+    .stat { padding: 14px 13px; }
+    .stat strong { font-size: 24px; }
+    .panel { padding: 16px; border-radius: 14px; }
+    nav { margin-right: -2px; }
+    nav button { padding: 10px 13px; font-size: 12px; }
+    .player { padding: 13px 4px; column-gap: 10px; }
+    .player .player-name { font-size: 13px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      scroll-behavior: auto !important;
+      transition-duration: .01ms !important;
+      animation-duration: .01ms !important;
+    }
+  }
+</style>
+
 </head>
 <body>
 

@@ -1533,12 +1533,12 @@ async function loadChampions(){
     console.log("NORTHGRIP: champions data =", data);
 
    if(!data || data.length === 0){
+    console.log("NORTHGRIP: μήνυμα τοποθετήθηκε", currentBox); 
   currentBox.innerHTML =
     '<div style="padding:20px;text-align:center;background:#f0fdf4;border-radius:12px;">' +
     '<h3>🏆 Δεν έχει ανακηρυχθεί ακόμη πρωταθλητής.</h3>' +
     '<p>Ο πρώτος πρωταθλητής της NorthGrip θα εμφανιστεί εδώ!</p>' +
     '</div>';
-
   historyBox.innerHTML = "";
   return;
 }

@@ -38,6 +38,16 @@
     <div class="stat"><span>Παίκτες</span><strong id="total">— / 35</strong></div>
     <div class="stat"><span>Αγώνες</span><strong id="matches">—</strong></div>
   </section>
+  
+  <section id="ladder-timer" class="panel" style="text-align:center;margin-top:18px">
+    <h2>🎾 Η Σκάλα</h2>
+    <p id="ladder-timer-status">Γίνεται έλεγχος κατάστασης…</p>
+    <div id="ladder-countdown" style="font-size:24px;font-weight:bold;margin:12px 0"></div>
+    <button id="start-ladder-button" class="action hidden" type="button">
+      Έναρξη σκάλας — 1 μήνας
+    </button>
+  </section>
+
   <nav aria-label="Καρτέλες">
     <button class="active" data-tab="ranking" onclick="showTab('ranking',this)">Κατάταξη</button>
     <button data-tab="challenges" onclick="showTab('challenges',this)">Προκλήσεις</button>
@@ -1009,12 +1019,13 @@ async function refreshAuth(){
     const adminSection = document.getElementById("admin-section");
 
     if(!user){
-      authStatus.textContent = "Δεν είσαι συνδεδεμένος.";
-      authForms.classList.remove("hidden");
-      signedControls.classList.add("hidden");
-      adminSection.classList.add("hidden");
-      return;
-    }
+  currentProfile = null;
+  authStatus.textContent = "Δεν είσαι συνδεδεμένος.";
+  authForms.classList.remove("hidden");
+  signedControls.classList.add("hidden");
+  adminSection.classList.add("hidden");
+  return;
+}
 
     authForms.classList.add("hidden");
     signedControls.classList.remove("hidden");
@@ -1063,14 +1074,121 @@ async function refreshAuth(){
   }
 }
 
+let ladderCountdownInterval = null;
+
+async function loadLadderTimer(){
+  const status = document.getElementById("ladder-timer-status");
+  const countdown = document.getElementById("ladder-countdown");
+  const startButton = document.getElementById("start-ladder-button");
+
+  if(!status || !countdown || !startButton) return;
+
+  startButton.classList.add("hidden");
+
+  try{
+    const {data,error} = await supabaseClient
+      .from("ladder_settings")
+      .select("started_at,ends_at")
+      .eq("id",true)
+      .maybeSingle();
+
+    if(error) throw error;
+
+    if(ladderCountdownInterval){
+      clearInterval(ladderCountdownInterval);
+      ladderCountdownInterval = null;
+    }
+
+    const isAdmin = currentProfile && currentProfile.is_admin;
+
+    if(!data || !data.started_at || !data.ends_at){
+      status.textContent = "Η σκάλα δεν έχει ξεκινήσει ακόμη.";
+      countdown.textContent = "";
+      if(isAdmin) startButton.classList.remove("hidden");
+      return;
+    }
+
+    const endTime = new Date(data.ends_at).getTime();
+
+    function updateCountdown(){
+      const remaining = endTime - Date.now();
+
+      if(remaining <= 0){
+        status.textContent = "🏁 Η σκάλα ολοκληρώθηκε!";
+        countdown.textContent = "";
+        if(isAdmin) startButton.classList.remove("hidden");
+        clearInterval(ladderCountdownInterval);
+        ladderCountdownInterval = null;
+        return;
+      }
+
+      const days = Math.floor(remaining / 86400000);
+      const hours = Math.floor((remaining % 86400000) / 3600000);
+      const minutes = Math.floor((remaining % 3600000) / 60000);
+      const seconds = Math.floor((remaining % 60000) / 1000);
+
+      status.textContent = "⏳ Απομένουν:";
+      countdown.textContent =
+        `${days} ημέρες · ${hours} ώρες · ${minutes} λεπτά · ${seconds} δευτ.`;
+    }
+
+    updateCountdown();
+
+    if(endTime > Date.now()){
+      ladderCountdownInterval = setInterval(updateCountdown,1000);
+    }
+
+  }catch(error){
+    console.error("Σφάλμα χρονομέτρου:",error);
+    status.textContent = "Δεν ήταν δυνατή η φόρτωση του χρονομέτρου.";
+    countdown.textContent = "";
+  }
+}
+
+document.getElementById("start-ladder-button")
+  .addEventListener("click",async function(){
+    const button = this;
+
+    if(!currentProfile || !currentProfile.is_admin){
+      alert("Μόνο οι διαχειριστές μπορούν να ξεκινήσουν τη σκάλα.");
+      return;
+    }
+
+    if(!confirm("Θέλεις να ξεκινήσει η σκάλα για έναν μήνα;")){
+      return;
+    }
+
+    button.disabled = true;
+
+    try{
+      const {error} = await supabaseClient.rpc("start_ladder");
+
+      if(error) throw error;
+
+      await loadLadderTimer();
+      alert("Η σκάλα ξεκίνησε!");
+    }catch(error){
+      alert("Σφάλμα: " + error.message);
+    }finally{
+      button.disabled = false;
+    }
+  });
+
 async function startApp(){
   const leaderboard=document.getElementById("leaderboard");
   if(!window.supabase||typeof window.supabase.createClient!=="function"){leaderboard.textContent="Δεν φορτώθηκε η βιβλιοθήκη Supabase.";return;}
   if(!SUPABASE_KEY||!SUPABASE_KEY.startsWith("sb_publishable_")){leaderboard.textContent="Δεν έχει συμπληρωθεί το Supabase Publishable Key στο index.html.";return;}
   try{
     supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-    await loadRanking();await refreshAuth();
-    supabaseClient.auth.onAuthStateChange(()=>{setTimeout(()=>refreshAuth(),0);});
+    await loadRanking();
+await refreshAuth();
+await loadLadderTimer();
+   supabaseClient.auth.onAuthStateChange(()=>{
+  setTimeout(async()=>{
+    await refreshAuth();
+    await loadLadderTimer();
+  },0);
+});
   }catch(error){leaderboard.textContent="Αποτυχία σύνδεσης Supabase: "+(error.message||String(error));console.error(error);}
 }
 startApp();

@@ -1506,6 +1506,67 @@ document.getElementById("start-ladder-button")
     }
   });
 
+async function loadChampions(){
+  const currentBox = document.getElementById("current-champion");
+  const historyBox = document.getElementById("champions-history");
+
+  if(!currentBox || !historyBox) return;
+
+  currentBox.innerHTML = "";
+  historyBox.innerHTML = '<p class="small">Φόρτωση πρωταθλητών...</p>';
+
+  try{
+    const {data,error} = await supabaseClient
+      .from("ladder_champions")
+      .select("id,champion_player_id,cycle_start,cycle_end,photo_path,reward_awarded")
+      .order("cycle_end",{ascending:false});
+
+    if(error) throw error;
+
+    if(!data || data.length === 0){
+      currentBox.innerHTML = '<p>Δεν έχει ανακηρυχθεί ακόμη πρωταθλητής.</p>';
+      historyBox.innerHTML = "";
+      return;
+    }
+
+    const playerIds = [...new Set(data.map(item=>item.champion_player_id))];
+
+    const {data:playersData,error:playersError} = await supabaseClient
+      .from("players")
+      .select("id,full_name")
+      .in("id",playerIds);
+
+    if(playersError) throw playersError;
+
+    const names = {};
+    (playersData || []).forEach(player=>{
+      names[player.id] = player.full_name;
+    });
+
+    const cards = data.map((item,index)=>{
+      const photo = item.photo_path
+        ? supabaseClient.storage.from("ladder-champions").getPublicUrl(item.photo_path).data.publicUrl
+        : "";
+
+      return `
+        <div class="card">
+          ${photo ? `<img src="${escapeHTML(photo)}" alt="Πρωταθλητής" style="width:100%;max-width:280px;border-radius:12px;object-fit:cover;">` : ""}
+          <h3>${escapeHTML(names[item.champion_player_id] || "Πρωταθλητής")}</h3>
+          <p>Περίοδος: ${escapeHTML(item.cycle_start)} – ${escapeHTML(item.cycle_end)}</p>
+          <p>${item.reward_awarded ? "🏆 Δωρεάν πλέξιμο απονεμήθηκε" : "Η απονομή εκκρεμεί"}</p>
+        </div>
+      `;
+    });
+
+    currentBox.innerHTML = cards[0];
+    historyBox.innerHTML = cards.slice(1).join("");
+
+  }catch(error){
+    console.error("Σφάλμα Hall of Fame:",error);
+    historyBox.innerHTML = '<p>Δεν ήταν δυνατή η φόρτωση του Hall of Fame.</p>';
+  }
+}
+
 async function startApp(){
   const leaderboard=document.getElementById("leaderboard");
   if(!window.supabase||typeof window.supabase.createClient!=="function"){leaderboard.textContent="Δεν φορτώθηκε η βιβλιοθήκη Supabase.";return;}
@@ -1515,6 +1576,7 @@ async function startApp(){
     await loadRanking();
 await refreshAuth();
 await loadLadderTimer();
+    await loadChampions();
    supabaseClient.auth.onAuthStateChange(()=>{
   setTimeout(async()=>{
     await refreshAuth();

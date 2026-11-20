@@ -323,11 +323,13 @@
   </section>
 
 
-  <nav aria-label="Καρτέλες">
-    <button class="active" data-tab="ranking" onclick="showTab('ranking',this)">Κατάταξη</button>
-    <button data-tab="challenges" onclick="showTab('challenges',this)">Προκλήσεις</button>
-    <button data-tab="players" onclick="showTab('players',this)">Παίκτες / Σύνδεση</button>
-  </nav>
+ <nav aria-label="Καρτέλες">
+  <button class="active" data-tab="ranking" onclick="showTab('ranking',this)">Κατάταξη</button>
+  <button data-tab="challenges" onclick="showTab('challenges',this)">Προκλήσεις</button>
+  <button data-tab="players" onclick="showTab('players',this)">Παίκτες / Σύνδεση</button>
+  <button data-tab="rules" onclick="showTab('rules',this)">Κανόνες & Έπαθλα</button>
+  <button data-tab="hall-of-fame" onclick="showTab('hall-of-fame',this)">Hall of Fame 🏆</button>
+</nav>
   <section id="ranking" class="panel">
     <h2>Επίσημη κατάταξη</h2><p class="intro">Η κατάταξη ενημερώνεται από την κοινή βάση δεδομένων.</p>
     <div id="leaderboard" class="loading">Γίνεται σύνδεση με τη βάση δεδομένων…</div><div id="connection-message" class="notice hidden"></div>
@@ -404,6 +406,57 @@
   <div id="all-players-list" class="loading">Φόρτωση παικτών…</div>
 </div>
 
+<section id="rules" class="hidden">
+  <div class="card">
+    <h2>🎾 Κανόνες λειτουργίας</h2>
+
+    <h3>Η κατάταξη</h3>
+    <ul>
+      <li>Η σκάλα αποτελείται από 35 θέσεις.</li>
+      <li>Οι νέοι εγκεκριμένοι παίκτες προστίθενται στο τέλος της κατάταξης.</li>
+      <li>Κάθε παίκτης μπορεί να προκαλέσει παίκτη έως 3 θέσεις ψηλότερα.</li>
+      <li>Παίκτης που έχει δηλώσει μη διαθέσιμος δεν δέχεται νέες προκλήσεις.</li>
+    </ul>
+
+    <h3>Μη διαθεσιμότητα</h3>
+    <ul>
+      <li>Η μέγιστη συνεχόμενη περίοδος μη διαθεσιμότητας είναι 7 ημέρες.</li>
+      <li>Μετά τις 7 ημέρες ο παίκτης πρέπει να γίνεται ξανά διαθέσιμος.</li>
+      <li>Αν υπάρχει ήδη αποδεκτή πρόκληση, αυτή δεν ακυρώνεται αυτόματα. Οι δύο παίκτες συμφωνούν νέα ημερομηνία ή απευθύνονται στον διαχειριστή.</li>
+    </ul>
+    <p><strong>Σημείωση:</strong> Η αυτόματη επαναφορά διαθεσιμότητας μετά από 7 ημέρες δεν έχει ενεργοποιηθεί ακόμη τεχνικά.</p>
+
+    <h3>Αποτελέσματα και βαθμολογία</h3>
+    <ul>
+      <li>Ο παίκτης υποβάλλει το αποτέλεσμα του αγώνα.</li>
+      <li>Το αποτέλεσμα γίνεται επίσημο μετά την έγκριση του διαχειριστή.</li>
+      <li>Νίκη: 3 βαθμοί.</li>
+      <li>Ήττα: 1 βαθμός.</li>
+      <li>Μη συμμετοχή: 0 βαθμοί.</li>
+    </ul>
+
+    <h3>Μετακίνηση στην κατάταξη</h3>
+    <p>Αν ο χαμηλότερα καταταγμένος παίκτης κερδίσει, ανεβαίνει στη θέση του αντιπάλου και οι ενδιάμεσοι παίκτες υποχωρούν κατά μία θέση.</p>
+  </div>
+
+  <div class="card">
+    <h2>🏆 Έπαθλα</h2>
+    <p>Στο τέλος κάθε μηνιαίου αγωνιστικού κύκλου, πρωταθλητής ανακηρύσσεται ο παίκτης που βρίσκεται στην πρώτη θέση της κατάταξης.</p>
+    <p>Ο διαχειριστής επιβεβαιώνει τον πρωταθλητή, ανεβάζει τη φωτογραφία του και καταγράφει την απονομή του δωρεάν πλεξίματος.</p>
+    <p>Κάθε πρωταθλητής προστίθεται στο Hall of Fame της NorthGrip.</p>
+  </div>
+</section>
+
+<section id="hall-of-fame" class="hidden">
+  <div class="card">
+    <h2>🏆 NorthGrip Hall of Fame</h2>
+    <p>Οι πρωταθλητές των προηγούμενων αγωνιστικών κύκλων.</p>
+
+    <div id="current-champion"></div>
+    <div id="champions-history"></div>
+  </div>
+</section>
+
 </main>
 <footer>FLORINA TENNIS LADDER · NORTHGRIP</footer>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -418,9 +471,13 @@ let currentUser = null;
 let currentProfile = null;
 
 function showTab(id,button){
-  ["ranking","challenges","players"].forEach(tabId=>document.getElementById(tabId).classList.toggle("hidden",tabId!==id));
+  ["ranking","challenges","players","rules","hall-of-fame"].forEach(tabId=>{
+    document.getElementById(tabId).classList.toggle("hidden",tabId!==id);
+  });
+
   document.querySelectorAll("nav button").forEach(btn=>btn.classList.remove("active"));
-  if(button)button.classList.add("active");
+
+  if(button) button.classList.add("active");
 }
 function escapeHTML(value){return String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[char]));}
 function setAuthMessage(message,isError=false){

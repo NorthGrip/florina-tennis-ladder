@@ -276,6 +276,7 @@ button.style.cssText = `
 
 
 
+
 async function loadRanking(){
   const leaderboard = document.getElementById("leaderboard");
   const message = document.getElementById("connection-message");
@@ -283,24 +284,10 @@ async function loadRanking(){
   try{
     const {data,error} = await supabaseClient
       .from("ladder_public")
-      .select("position,player_id,full_name,wins,losses,points,is_available")
+      .select("position,player_id,full_name,wins,losses,points,is_available,is_in_match")
       .order("position",{ascending:true});
 
     if(error) throw error;
-
-    const {data:activeChallenges,error:challengesError} = await supabaseClient
-      .from("challenges")
-      .select("challenger_id,opponent_id")
-      .eq("status","accepted");
-
-    if(challengesError) throw challengesError;
-
-    const playersInMatch = new Set();
-
-    (activeChallenges || []).forEach(c=>{
-      playersInMatch.add(c.challenger_id);
-      playersInMatch.add(c.opponent_id);
-    });
 
     players = (data || [])
       .filter(r => r.player_id && r.full_name)
@@ -312,7 +299,7 @@ async function loadRanking(){
         losses:Number(r.losses || 0),
         points:Number(r.points || 0),
         is_available:r.is_available,
-        in_match:playersInMatch.has(r.player_id)
+        in_match:r.is_in_match
       }));
 
     const {data:matchCount,error:matchesError} = await supabaseClient

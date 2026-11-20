@@ -1586,9 +1586,10 @@ await loadLadderTimer();
     await loadChampions();
    supabaseClient.auth.onAuthStateChange(()=>{
   setTimeout(async()=>{
-    await refreshAuth();
-    await loadLadderTimer();
-  },0);
+  await refreshAuth();
+  await loadLadderTimer();
+  await loadChampions();
+},0);
 });
   }catch(error){leaderboard.textContent="Αποτυχία σύνδεσης Supabase: "+(error.message||String(error));console.error(error);}
 }

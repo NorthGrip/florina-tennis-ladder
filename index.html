@@ -720,20 +720,51 @@ async function loadChallenges(){
   notice.classList.add("hidden");
   controls.classList.remove("hidden");
 
+ 
   const me=players.find(p=>p.id===currentProfile.id);
   select.innerHTML='<option value="">Επίλεξε παίκτη</option>';
 
-  if(me){
-    players
-      .filter(p=>p.position<me.position && me.position-p.position<=3)
-      .sort((a,b)=>a.position-b.position)
-      .forEach(p=>{
-        const option=document.createElement("option");
-        option.value=p.id;
-        option.textContent=`${p.position}. ${p.name}`;
-        select.appendChild(option);
-      });
+  const {data:activeChallenges,error:activeError}=await supabaseClient
+    .from("challenges")
+    .select("challenger_id,opponent_id")
+    .in("status",["pending","accepted"]);
+
+  if(activeError){
+    console.error("Σφάλμα ενεργών προκλήσεων:",activeError);
+    return;
   }
+
+  const busyPlayers=new Set();
+
+  (activeChallenges||[]).forEach(c=>{
+    busyPlayers.add(c.challenger_id);
+    busyPlayers.add(c.opponent_id);
+  });
+
+  if(me){
+    const candidates=players
+      .filter(p=>
+        p.position<me.position &&
+        p.is_available!==false
+      )
+      .sort((a,b)=>a.position-b.position);
+
+    let counted=0;
+
+    for(const p of candidates){
+      if(counted>=3) break;
+
+      counted++;
+
+      if(busyPlayers.has(p.id)) continue;
+
+      const option=document.createElement("option");
+      option.value=p.id;
+      option.textContent=`${p.position}. ${p.name}`;
+      select.appendChild(option);
+    }
+  }
+
 
   list.textContent="Φόρτωση προκλήσεων…";
 

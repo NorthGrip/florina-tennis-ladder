@@ -947,7 +947,7 @@ async function refreshAuth(){
     const {data:{user},error} = await supabaseClient.auth.getUser();
 
     if(error) throw error;
-
+    currentUser = user;
     const authStatus = document.getElementById("auth-status");
     const authForms = document.getElementById("auth-forms");
     const signedControls = document.getElementById("signed-in-controls");
@@ -971,7 +971,7 @@ async function refreshAuth(){
       .maybeSingle();
 
     if(profileError) throw profileError;
-
+    currentProfile = profile;
     if(!profile){
       authStatus.textContent = "Δεν βρέθηκε προφίλ παίκτη.";
       adminSection.classList.add("hidden");

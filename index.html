@@ -942,6 +942,52 @@ async function respondToChallenge(button){
   await loadChallenges();
 }
 
+document.getElementById("create-challenge-button").addEventListener("click", async function(){
+  const button = this;
+  const message = document.getElementById("challenge-message");
+  const select = document.getElementById("opponent-select");
+  const opponentId = select.value;
+
+  if(!currentUser || !currentProfile || currentProfile.status !== "approved"){
+    message.textContent = "Πρέπει να συνδεθείς με εγκεκριμένο λογαριασμό.";
+    return;
+  }
+
+  if(!opponentId){
+    message.textContent = "Επίλεξε πρώτα αντίπαλο.";
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "Αποστολή…";
+  message.textContent = "";
+
+  try{
+    const {error} = await supabaseClient
+      .from("challenges")
+      .insert({
+        challenger_id: currentProfile.id,
+        opponent_id: opponentId,
+        status: "pending",
+        proposed_at: new Date().toISOString()
+      });
+
+    if(error) throw error;
+
+    message.textContent = "Η πρόκληση στάλθηκε επιτυχώς!";
+    select.value = "";
+    await loadChallenges();
+
+  }catch(error){
+    console.error("Σφάλμα δημιουργίας πρόκλησης:", error);
+    message.textContent = "Δεν στάλθηκε η πρόκληση: " + error.message;
+
+  }finally{
+    button.disabled = false;
+    button.textContent = "Αποστολή πρόκλησης";
+  }
+});
+
 async function refreshAuth(){
   try{
     const {data:{user},error} = await supabaseClient.auth.getUser();

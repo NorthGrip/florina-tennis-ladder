@@ -33,20 +33,30 @@
 </head>
 <body>
 
+
 <header>
   <div class="wrap">
-    <img
-      src="northgrip-logo.jpg"
-      alt="NorthGrip Florina Tennis Academy"
-      style="display:block;width:180px;max-width:55%;height:auto;margin:0 auto 15px;"
-    >
     <div class="brand">NORTHGRIP PRESENTS</div>
 
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;">
+      <h1 style="margin:0;">Florina Tennis Ladder by</h1>
+      <img
+        src="northgrip-logo.jpg"
+        alt="NorthGrip Florina Tennis Academy"
+        style="width:65px;height:auto;display:block;"
+      >
+    </div>
+
+    <p>Η κατάταξη του τένις στη Φλώρινα</p>
+  </div>
+</header>
+
+<main class="wrap">
   <section class="stats" aria-label="Στατιστικά">
     <div class="stat"><span>Παίκτες</span><strong id="total">— / 35</strong></div>
     <div class="stat"><span>Αγώνες</span><strong id="matches">—</strong></div>
   </section>
-  
+
   <section id="ladder-timer" class="panel" style="text-align:center;margin-top:18px">
     <h2>🎾 Η Σκάλα</h2>
     <p id="ladder-timer-status">Γίνεται έλεγχος κατάστασης…</p>
@@ -55,6 +65,7 @@
       Έναρξη σκάλας — 1 μήνας
     </button>
   </section>
+
 
   <nav aria-label="Καρτέλες">
     <button class="active" data-tab="ranking" onclick="showTab('ranking',this)">Κατάταξη</button>

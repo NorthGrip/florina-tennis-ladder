@@ -1355,11 +1355,14 @@ const user = session?.user || null;
     const adminSection = document.getElementById("admin-section");
 
     if(!user){
+  currentUser = null;
   currentProfile = null;
+
   authStatus.textContent = "Δεν είσαι συνδεδεμένος.";
   authForms.classList.remove("hidden");
   signedControls.classList.add("hidden");
   adminSection.classList.add("hidden");
+
   return;
 }
 

@@ -1532,12 +1532,16 @@ async function loadChampions(){
     if(error) throw error;
     console.log("NORTHGRIP: champions data =", data);
 
-    if(!data || data.length === 0){
-      currentBox.innerHTML = '<p>Δεν έχει ανακηρυχθεί ακόμη πρωταθλητής.</p>';
-      historyBox.innerHTML = "";
-      return;
-    }
+   if(!data || data.length === 0){
+  currentBox.innerHTML =
+    '<div style="padding:20px;text-align:center;background:#f0fdf4;border-radius:12px;">' +
+    '<h3>🏆 Δεν έχει ανακηρυχθεί ακόμη πρωταθλητής.</h3>' +
+    '<p>Ο πρώτος πρωταθλητής της NorthGrip θα εμφανιστεί εδώ!</p>' +
+    '</div>';
 
+  historyBox.innerHTML = "";
+  return;
+}
     const playerIds = [...new Set(data.map(item=>item.champion_player_id))];
 
     const {data:playersData,error:playersError} = await supabaseClient

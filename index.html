@@ -144,6 +144,7 @@ function setAuthMessage(message,isError=false){
 
 
 
+f
 function renderPlayers(){
   const leaderboard = document.getElementById("leaderboard");
   const total = document.getElementById("total");
@@ -168,9 +169,11 @@ function renderPlayers(){
           </span>
 
           <span class="small">
-            ${p.is_available
-              ? "🟢 Διαθέσιμος"
-              : "⚪ Μη διαθέσιμος"}
+            ${p.in_match
+              ? "🎾 Σε αγώνα"
+              : p.is_available
+                ? "🟢 Διαθέσιμος"
+                : "⚪ Μη διαθέσιμος"}
           </span>
         </div>
       `).join("")
@@ -178,7 +181,6 @@ function renderPlayers(){
 
   showMyAvailabilityButton();
 }
-
 
 async function showMyAvailabilityButton(){
   const oldButton = document.getElementById("my-availability-control");
@@ -273,6 +275,7 @@ button.style.cssText = `
 }
 
 
+
 async function loadRanking(){
   const leaderboard = document.getElementById("leaderboard");
   const message = document.getElementById("connection-message");
@@ -285,6 +288,20 @@ async function loadRanking(){
 
     if(error) throw error;
 
+    const {data:activeChallenges,error:challengesError} = await supabaseClient
+      .from("challenges")
+      .select("challenger_id,opponent_id")
+      .eq("status","accepted");
+
+    if(challengesError) throw challengesError;
+
+    const playersInMatch = new Set();
+
+    (activeChallenges || []).forEach(c=>{
+      playersInMatch.add(c.challenger_id);
+      playersInMatch.add(c.opponent_id);
+    });
+
     players = (data || [])
       .filter(r => r.player_id && r.full_name)
       .map(r => ({
@@ -294,7 +311,8 @@ async function loadRanking(){
         wins:Number(r.wins || 0),
         losses:Number(r.losses || 0),
         points:Number(r.points || 0),
-        is_available:r.is_available
+        is_available:r.is_available,
+        in_match:playersInMatch.has(r.player_id)
       }));
 
     const {data:matchCount,error:matchesError} = await supabaseClient
@@ -327,8 +345,6 @@ async function loadRanking(){
   }
 }
 
-
- 
 async function updateMyAvailability(isAvailable) {
   const { data, error } = await supabaseClient.rpc(
     "set_ladder_availability",

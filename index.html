@@ -452,6 +452,36 @@
   <div class="card">
     <h2>🏆 NorthGrip Hall of Fame</h2>
     <p>Οι πρωταθλητές των προηγούμενων αγωνιστικών κύκλων.</p>
+    
+<div id="champion-admin-form" class="card hidden">
+  <h3>⚙️ Διαχείριση Πρωταθλητή</h3>
+
+  <label for="champion-player">Επιλογή πρωταθλητή</label>
+  <select id="champion-player" required>
+    <option value="">Επιλέξτε παίκτη</option>
+  </select>
+
+  <label for="champion-start">Έναρξη αγωνιστικού κύκλου</label>
+  <input type="date" id="champion-start" required>
+
+  <label for="champion-end">Λήξη αγωνιστικού κύκλου</label>
+  <input type="date" id="champion-end" required>
+
+  <label for="champion-photo">Φωτογραφία πρωταθλητή</label>
+  <input type="file" id="champion-photo" accept="image/*" required>
+
+  <label>
+    <input type="checkbox" id="champion-reward">
+    Επιβεβαιώνω ότι απονεμήθηκε το δωρεάν πλέξιμο
+  </label>
+
+  <button type="button" id="save-champion" class="action">
+    Αποθήκευση Πρωταθλητή
+  </button>
+
+  <div id="champion-admin-message" role="status"></div>
+</div>
+
 
     <div id="current-champion">
       <div style="padding:20px; text-align:center; background:#f0fdf4; border-radius:12px;">
@@ -1384,6 +1414,16 @@ const user = session?.user || null;
 
     if(profileError) throw profileError;
     currentProfile = profile;
+    const championAdminForm = document.getElementById("champion-admin-form");
+
+if(championAdminForm){
+  const isApprovedAdmin = profile?.is_admin && profile?.status === "approved";
+  championAdminForm.classList.toggle("hidden", !isApprovedAdmin);
+
+  if(isApprovedAdmin){
+    await loadChampionAdminPlayers();
+  }
+}
     if(!profile){
       authStatus.textContent = "Δεν βρέθηκε προφίλ παίκτη.";
       adminSection.classList.add("hidden");
@@ -1587,6 +1627,102 @@ async function loadChampions(){
   }
 }
 
+  async function loadChampionAdminPlayers(){
+  const select = document.getElementById("champion-player");
+  if(!select) return;
+
+  select.innerHTML = '<option value="">Φόρτωση παικτών...</option>';
+
+  try{
+    const {data,error} = await supabaseClient
+      .from("players")
+      .select("id,full_name")
+      .eq("status","approved")
+      .order("full_name");
+
+    if(error) throw error;
+
+    select.innerHTML = '<option value="">Επιλέξτε παίκτη</option>';
+
+    (data || []).forEach(player=>{
+      const option = document.createElement("option");
+      option.value = player.id;
+      option.textContent = player.full_name;
+      select.appendChild(option);
+    });
+
+  }catch(error){
+    console.error("Σφάλμα φόρτωσης παικτών:",error);
+    select.innerHTML = '<option value="">Αδυναμία φόρτωσης παικτών</option>';
+  }
+}
+  async function saveChampion(){
+  const message = document.getElementById("champion-admin-message");
+  const playerId = document.getElementById("champion-player").value;
+  const cycleStart = document.getElementById("champion-start").value;
+  const cycleEnd = document.getElementById("champion-end").value;
+  const photoFile = document.getElementById("champion-photo").files[0];
+  const rewardAwarded = document.getElementById("champion-reward").checked;
+
+  try{
+    if(!currentProfile?.is_admin || currentProfile.status !== "approved"){
+      throw new Error("Δεν έχεις δικαίωμα διαχείρισης.");
+    }
+
+    if(!playerId || !cycleStart || !cycleEnd || !photoFile){
+      throw new Error("Συμπλήρωσε όλα τα υποχρεωτικά πεδία.");
+    }
+
+    if(cycleEnd < cycleStart){
+      throw new Error("Η ημερομηνία λήξης πρέπει να είναι μετά την έναρξη.");
+    }
+
+    message.textContent = "Αποθήκευση...";
+
+    const extension = photoFile.name.split(".").pop().toLowerCase();
+    const photoPath = `${cycleStart}_${cycleEnd}_${crypto.randomUUID()}.${extension}`;
+
+    const {error:uploadError} = await supabaseClient
+      .storage
+      .from("ladder-champions")
+      .upload(photoPath,photoFile,{
+        upsert:false,
+        contentType:photoFile.type
+      });
+
+    if(uploadError) throw uploadError;
+
+    const {error:insertError} = await supabaseClient
+      .from("ladder_champions")
+      .insert({
+        champion_player_id:playerId,
+        cycle_start:cycleStart,
+        cycle_end:cycleEnd,
+        photo_path:photoPath,
+        reward_awarded:rewardAwarded,
+        reward_awarded_at:rewardAwarded ? new Date().toISOString() : null,
+        created_by:currentUser.id
+      });
+
+    if(insertError) throw insertError;
+
+    message.textContent = "Ο πρωταθλητής αποθηκεύτηκε επιτυχώς! 🏆";
+
+    document.getElementById("champion-player").value = "";
+    document.getElementById("champion-start").value = "";
+    document.getElementById("champion-end").value = "";
+    document.getElementById("champion-photo").value = "";
+    document.getElementById("champion-reward").checked = false;
+
+    await loadChampions();
+
+  }catch(error){
+    console.error("Σφάλμα αποθήκευσης πρωταθλητή:",error);
+    message.textContent = "Σφάλμα: " + error.message;
+  }
+}
+  document.getElementById("save-champion")
+  .addEventListener("click", saveChampion);
 async function startApp(){
   const leaderboard=document.getElementById("leaderboard");
   if(!window.supabase||typeof window.supabase.createClient!=="function"){leaderboard.textContent="Δεν φορτώθηκε η βιβλιοθήκη Supabase.";return;}

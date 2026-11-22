@@ -2141,14 +2141,7 @@ mainMenu.querySelectorAll("button").forEach(button=>{
 });
 }
   
-const challengeNotificationButton = document.getElementById("challenge-notification-button");
 
-if(challengeNotificationButton){
-  challengeNotificationButton.addEventListener("click",()=>{
-    const challengesButton = document.querySelector('#main-menu button[data-tab="challenges"]');
-    showTab("challenges", challengesButton);
-  });
-}
 
 startApp();
 </script>

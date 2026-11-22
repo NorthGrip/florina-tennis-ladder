@@ -1544,7 +1544,6 @@ document.getElementById("create-challenge-button").addEventListener("click", asy
 if (result.error) throw result.error;
 
 const { error: notificationError } =
- const { error: notificationError } =
   await supabaseClient.functions.invoke("smooth-endpoint", {
     body: {
       challenge_id: result.data.id
@@ -1554,15 +1553,16 @@ const { error: notificationError } =
 if (notificationError) {
   console.error("Σφάλμα ειδοποίησης:", notificationError);
 }
-    message.textContent = "Η πρόκληση στάλθηκε επιτυχώς!";
-    select.value = "";
-    await loadChallenges();
 
-  }catch(error){
-    console.error("Σφάλμα δημιουργίας πρόκλησης:", error);
-    message.textContent = "Δεν στάλθηκε η πρόκληση: " + error.message;
+message.textContent = "Η πρόκληση στάλθηκε επιτυχώς!";
+select.value = "";
+await loadChallenges();
 
-  }finally{
+} catch(error) {
+  console.error("Σφάλμα δημιουργίας πρόκλησης:", error);
+  message.textContent = "Δεν στάλθηκε η πρόκληση: " + error.message;
+
+} finally {
     button.disabled = false;
     button.textContent = "Αποστολή πρόκλησης";
   }

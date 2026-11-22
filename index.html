@@ -1456,8 +1456,7 @@ if(chatBox){
     signedControls.classList.remove("hidden");
 
     const {data:profile,error:profileError} = await supabaseClient
-      console.log("CHAT DEBUG PROFILE:", profile);
-console.log("CHAT DEBUG BUTTON:", document.getElementById("chat-nav-button"));
+     
       .from("players")
       .select("id,full_name,status,is_admin")
       .eq("auth_user_id",user.id)

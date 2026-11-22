@@ -2228,7 +2228,33 @@ const subscription = await registration.pushManager.subscribe({
     alert("Αποτυχία ενεργοποίησης ειδοποιήσεων: " + error.message);
   }
 }
+async function disablePushNotifications() {
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.getSubscription();
 
+    if (subscription) {
+      const endpoint = subscription.endpoint;
+
+      const { error } = await supabaseClient
+        .from("push_subscriptions")
+        .delete()
+        .eq("endpoint", endpoint);
+
+      if (error) throw error;
+
+      await subscription.unsubscribe();
+    }
+
+    document.getElementById("enable-push-button").classList.remove("hidden");
+    document.getElementById("disable-push-button").classList.add("hidden");
+
+    alert("Οι ειδοποιήσεις απενεργοποιήθηκαν.");
+  } catch (error) {
+    console.error("Push disable error:", error);
+    alert("Αποτυχία απενεργοποίησης: " + error.message);
+  }
+}
 document.addEventListener("DOMContentLoaded", () => {
   const enablePushButton = document.getElementById("enable-push-button");
 
@@ -2238,6 +2264,11 @@ document.addEventListener("DOMContentLoaded", () => {
       enablePushNotifications();
     });
   }
+  const disablePushButton = document.getElementById("disable-push-button");
+
+if (disablePushButton) {
+  disablePushButton.addEventListener("click", disablePushNotifications);
+}
 });
 startApp();
 </script>

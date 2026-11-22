@@ -2153,7 +2153,75 @@ if (challengeNotificationButton) {
     showTab("challenges", challengesButton);
   });
 }
+  const VAPID_PUBLIC_KEY = "BJTLeSDxQS2ahl5DLqwO4iJj2dQR-FI9ODy7fIrHYhIZpjSMZ3riSsn__hxpalqENykH3B-ZEHYvS1sISW2w8F4";
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/-/g, "+")
+    .replace(/_/g, "/");
+
+  const rawData = atob(base64);
+  return Uint8Array.from(rawData, char => char.charCodeAt(0));
+}
+
+async function enablePushNotifications() {
+  try {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      alert("Η συσκευή ή ο browser δεν υποστηρίζει Push Notifications.");
+      return;
+    }
+
+    if (!currentProfile || currentProfile.status !== "approved") {
+      alert("Χρειάζεται εγκεκριμένος λογαριασμός.");
+      return;
+    }
+
+    const permission = await Notification.requestPermission();
+
+    if (permission !== "granted") {
+      alert("Δεν δόθηκε άδεια για ειδοποιήσεις.");
+      return;
+    }
+
+    const registration = await navigator.serviceWorker.register("/push-sw.js");
+
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
+
+    const subscriptionData = subscription.toJSON();
+
+    const { error } = await supabaseClient
+      .from("push_subscriptions")
+      .upsert({
+        player_id: currentProfile.id,
+        endpoint: subscriptionData.endpoint,
+        p256dh: subscriptionData.keys.p256dh,
+        auth: subscriptionData.keys.auth
+      }, { onConflict: "endpoint" });
+
+    if (error) throw error;
+
+    alert("Οι ειδοποιήσεις ενεργοποιήθηκαν επιτυχώς!");
+    document.getElementById("enable-push-button").classList.add("hidden");
+
+  } catch (error) {
+    console.error("Push notification error:", error);
+    alert("Αποτυχία ενεργοποίησης ειδοποιήσεων: " + error.message);
+  }
+}
+
+const enablePushButton = document.getElementById("enable-push-button");
+
+if (enablePushButton) {
+  enablePushButton.addEventListener("click", enablePushNotifications);
+}
 startApp();
 </script>
+  <button id="enable-push-button" class="hidden" type="button">
+  🔔 Ενεργοποίηση ειδοποιήσεων
+</button>
 </body>
 </html>

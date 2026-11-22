@@ -27,6 +27,56 @@
     .player-name{font-weight:700;overflow-wrap:anywhere}.player-name .small{display:block;font-weight:400}.points{font-weight:800;color:var(--green);white-space:nowrap}
     .empty{color:#8a958d;font-weight:400}.notice{padding:12px 13px;border-radius:10px;background:#f1f5ed;color:#405747;font-size:13px;line-height:1.5;margin-top:13px}
     .error{background:#fff0ef;color:var(--danger)}.loading{color:var(--muted);padding:18px 4px}.hidden{display:none!important}
+    
+.menu-wrapper{
+  position:relative;
+  display:inline-block;
+  margin:12px 0;
+}
+
+.menu-toggle{
+  background:#174d35;
+  color:white;
+  border:0;
+  border-radius:10px;
+  padding:12px 20px;
+  font-size:16px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.main-menu{
+  position:absolute;
+  top:calc(100% + 8px);
+  left:0;
+  z-index:1000;
+  min-width:230px;
+  padding:10px;
+  background:white;
+  border:1px solid #dce5dc;
+  border-radius:12px;
+  box-shadow:0 8px 25px rgba(0,0,0,.18);
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.main-menu button{
+  width:100%;
+  text-align:left;
+  padding:12px;
+  border:0;
+  border-radius:8px;
+  background:white;
+  color:#174d35;
+  cursor:pointer;
+}
+
+.main-menu button:hover,
+.main-menu button.active{
+  background:#edf3e9;
+}
+
     footer{text-align:center;padding:20px 12px 28px;color:var(--muted);font-size:11px;letter-spacing:1.3px}
     label{display:block;font-size:13px;font-weight:700;margin:10px 0 5px}input{width:100%;padding:12px;border:1px solid var(--line);border-radius:9px;font-size:16px;background:#fff}
     .field{margin-bottom:10px}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
@@ -323,17 +373,32 @@
   </section>
 
 
- <nav aria-label="Καρτέλες">
-  <button class="active" data-tab="ranking" onclick="showTab('ranking',this)">Κατάταξη</button>
-  <button data-tab="challenges" onclick="showTab('challenges',this)">Προκλήσεις</button>
-  <button data-tab="players" onclick="showTab('players',this)">Παίκτες / Σύνδεση</button>
-  <button data-tab="rules" onclick="showTab('rules',this)">Κανόνες & Έπαθλα</button>
-  <button data-tab="hall-of-fame" onclick="showTab('hall-of-fame',this)">Hall of Fame 🏆</button>
-   <button data-tab="chat" id="chat-nav-button"
-  class="hidden" onclick="showTab('chat',this)">
-  Chat Room 💬
-</button>
-</nav>
+ 
+<div class="menu-wrapper">
+  <button type="button" id="menu-toggle" class="menu-toggle"
+    aria-expanded="false" aria-controls="main-menu">
+    ☰ Μενού
+  </button>
+
+  <nav id="main-menu" class="main-menu hidden"
+    aria-label="Κεντρικό μενού">
+    <button class="active" data-tab="ranking"
+      onclick="showTab('ranking',this)">Κατάταξη</button>
+
+    <button data-tab="challenges"
+      onclick="showTab('challenges',this)">Προκλήσεις</button>
+
+    <button data-tab="players"
+      onclick="showTab('players',this)">Παίκτες / Σύνδεση</button>
+
+    <button data-tab="rules"
+      onclick="showTab('rules',this)">Κανόνες & Έπαθλα</button>
+
+    <button data-tab="hall-of-fame"
+      onclick="showTab('hall-of-fame',this)">Hall of Fame 🏆</button>
+  </nav>
+</div>
+
   <section id="ranking" class="panel">
     <h2>Επίσημη κατάταξη</h2><p class="intro">Η κατάταξη ενημερώνεται από την κοινή βάση δεδομένων.</p>
     <div id="leaderboard" class="loading">Γίνεται σύνδεση με τη βάση δεδομένων…</div><div id="connection-message" class="notice hidden"></div>
@@ -1970,6 +2035,23 @@ await loadLadderTimer();
 },0);
 });
   }catch(error){leaderboard.textContent="Αποτυχία σύνδεσης Supabase: "+(error.message||String(error));console.error(error);}
+}
+  
+const menuToggle = document.getElementById("menu-toggle");
+const mainMenu = document.getElementById("main-menu");
+
+if(menuToggle && mainMenu){
+  menuToggle.addEventListener("click",()=>{  const isOpen = !mainMenu.classList.contains("hidden");
+  mainMenu.classList.toggle("hidden",isOpen);
+  menuToggle.setAttribute("aria-expanded",String(!isOpen));
+});
+
+mainMenu.querySelectorAll("button").forEach(button=>{
+  button.addEventListener("click",()=>{
+    mainMenu.classList.add("hidden");
+    menuToggle.setAttribute("aria-expanded","false");
+  });
+});
 }
 startApp();
 </script>

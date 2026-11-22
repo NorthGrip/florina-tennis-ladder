@@ -2222,6 +2222,7 @@ const subscription = await registration.pushManager.subscribe({
 
     alert("Οι ειδοποιήσεις ενεργοποιήθηκαν επιτυχώς!");
     document.getElementById("enable-push-button").classList.add("hidden");
+    document.getElementById("disable-push-button").classList.remove("hidden");
 
   } catch (error) {
     console.error("Push notification error:", error);

@@ -2227,11 +2227,16 @@ async function enablePushNotifications() {
   }
 }
 
-const enablePushButton = document.getElementById("enable-push-button");
+document.addEventListener("DOMContentLoaded", () => {
+  const enablePushButton = document.getElementById("enable-push-button");
 
-if (enablePushButton) {
-  enablePushButton.addEventListener("click", enablePushNotifications);
-}
+  if (enablePushButton) {
+    enablePushButton.addEventListener("click", () => {
+      alert("Το κουμπί λειτουργεί!");
+      enablePushNotifications();
+    });
+  }
+});
 startApp();
 </script>
   <button id="enable-push-button" class="hidden" type="button">

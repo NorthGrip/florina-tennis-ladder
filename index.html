@@ -1541,6 +1541,12 @@ document.getElementById("create-challenge-button").addEventListener("click", asy
       });
 
     if(error) throw error;
+        const { error: notificationError } =
+      await supabaseClient.functions.invoke("smooth-endpoint", {
+        body: {
+          challenge_id: data?.id
+        }
+      });
 
     message.textContent = "Η πρόκληση στάλθηκε επιτυχώς!";
     select.value = "";

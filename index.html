@@ -28,11 +28,15 @@
     .empty{color:#8a958d;font-weight:400}.notice{padding:12px 13px;border-radius:10px;background:#f1f5ed;color:#405747;font-size:13px;line-height:1.5;margin-top:13px}
     .error{background:#fff0ef;color:var(--danger)}.loading{color:var(--muted);padding:18px 4px}.hidden{display:none!important}
     
+
 .menu-wrapper{
   position:relative;
-  display:inline-block;
+  display:flex;
+  justify-content:flex-end;
+  width:100%;
   margin:12px 0;
 }
+
 
 .menu-toggle{
   background:#174d35;
@@ -48,7 +52,7 @@
 .main-menu{
   position:absolute;
   top:calc(100% + 8px);
-  left:0;
+  right:0;
   z-index:1000;
   min-width:230px;
   padding:10px;

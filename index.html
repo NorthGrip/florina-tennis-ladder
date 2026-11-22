@@ -443,25 +443,59 @@
   <section id="players" class="panel hidden">
     <h2>Παίκτες</h2><p class="intro">Εγγραφή νέου παίκτη, σύνδεση και έγκριση από διαχειριστή.</p>
     <div id="auth-status" class="notice">Δεν είσαι συνδεδεμένος.</div>
-    <div id="auth-forms">
-      <h3>Νέα εγγραφή</h3>
-      <form id="signup-form">
-        <div class="field"><label for="signup-name">Ονοματεπώνυμο</label><input id="signup-name" autocomplete="name" required maxlength="120"></div>
-        <div class="field"><label for="signup-phone">Κινητό (προαιρετικό)</label><input id="signup-phone" type="tel" autocomplete="tel"></div>
-        <div class="field"><label for="signup-email">Email</label><input id="signup-email" type="email" autocomplete="email" required></div>
-        <div class="field"><label for="signup-password">Κωδικός (τουλάχιστον 8 χαρακτήρες)</label><input id="signup-password" type="password" autocomplete="new-password" minlength="8" required></div>
-        <div class="actions"><button class="action" type="submit">Εγγραφή</button></div>
-      </form>
-      <h3>Σύνδεση υπάρχοντος λογαριασμού</h3>
-      <form id="login-form">
-        <div class="field"><label for="login-email">Email</label><input id="login-email" type="email" autocomplete="username" required></div>
-        <div class="field"><label for="login-password">Κωδικός</label><input id="login-password" type="password" autocomplete="current-password" required></div>
-        <div class="actions"><button class="action secondary" type="submit">Σύνδεση</button></div>
-      </form>
+    
+<div id="auth-forms">
+
+  <h3>Σύνδεση</h3>
+  <form id="login-form">
+    <div class="field">
+      <label for="login-email">Email</label>
+      <input id="login-email" type="email" autocomplete="username" required>
     </div>
-    <div id="signed-in-controls" class="hidden"><div class="actions"><button id="logout-button" class="action secondary" type="button">Αποσύνδεση</button></div></div>
-    <div id="auth-message" class="statusline" role="status"></div>
-   
+    <div class="field">
+      <label for="login-password">Κωδικός</label>
+      <input id="login-password" type="password" autocomplete="current-password" required>
+    </div>
+    <div class="actions">
+      <button class="action secondary" type="submit">Σύνδεση</button>
+    </div>
+  </form>
+
+  <hr>
+
+  <h3>Νέος παίκτης; Κάνε εγγραφή</h3>
+  <form id="signup-form">
+    <div class="field">
+      <label for="signup-name">Ονοματεπώνυμο</label>
+      <input id="signup-name" autocomplete="name" required maxlength="120">
+    </div>
+    <div class="field">
+      <label for="signup-phone">Κινητό (προαιρετικό)</label>
+      <input id="signup-phone" type="tel" autocomplete="tel">
+    </div>
+    <div class="field">
+      <label for="signup-email">Email</label>
+      <input id="signup-email" type="email" autocomplete="email" required>
+    </div>
+    <div class="field">
+      <label for="signup-password">Κωδικός (τουλάχιστον 8 χαρακτήρες)</label>
+      <input id="signup-password" type="password" autocomplete="new-password" minlength="8" required>
+    </div>
+    <div class="actions">
+      <button class="action" type="submit">Εγγραφή</button>
+    </div>
+  </form>
+
+</div>
+
+<div id="signed-in-controls" class="hidden">
+  <div class="actions">
+    <button id="logout-button" class="action secondary" type="button">Αποσύνδεση</button>
+  </div>
+</div>
+
+<div id="auth-message" class="statusline" role="status"></div>
+
 <div id="admin-section" class="hidden">
   <h3>Αιτήσεις προς έγκριση</h3>
   <p class="small">Με την έγκριση, ο παίκτης προστίθεται στην επόμενη θέση μετά τον τελευταίο.</p>

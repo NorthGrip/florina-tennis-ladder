@@ -1331,7 +1331,21 @@ if(me){
     list.textContent="Σφάλμα φόρτωσης: "+error.message;
     return;
   }
+  // Ενημέρωση καμπανακιού νέων προκλήσεων
+  const notificationButton = document.getElementById("challenge-notification-button");
+  const notificationCount = document.getElementById("challenge-notification-count");
 
+  const receivedChallenges = (data || []).filter(c =>
+    c.opponent_id === currentProfile.id &&
+    c.status === "pending"
+  );
+
+  if (notificationButton && notificationCount) {
+    notificationButton.classList.remove("hidden");
+    const count = receivedChallenges.length;
+    notificationCount.textContent = count > 99 ? "99+" : String(count);
+    notificationCount.classList.toggle("hidden", count === 0);
+  }
   if(!data || !data.length){
     list.innerHTML='<p class="small">Δεν υπάρχουν ακόμη προκλήσεις.</p>';
     return;
@@ -1471,23 +1485,6 @@ if(me){
     });
   });
 }
-
-  // Ενημέρωση καμπανακιού νέων προκλήσεων
-  const notificationButton = document.getElementById("challenge-notification-button");
-  const notificationCount = document.getElementById("challenge-notification-count");
-
-  const receivedChallenges = (data || []).filter(c =>
-    c.opponent_id === currentProfile.id &&
-    c.status === "pending"
-  );
-
-  if(notificationButton && notificationCount){
-    notificationButton.classList.remove("hidden");
-
-    const count = receivedChallenges.length;
-    notificationCount.textContent = count > 99 ? "99+" : String(count);
-    notificationCount.classList.toggle("hidden", count === 0);
-  }
 
 async function respondToChallenge(button){
   const id=button.dataset.id;
@@ -2124,25 +2121,38 @@ await loadLadderTimer();
   }catch(error){leaderboard.textContent="Αποτυχία σύνδεσης Supabase: "+(error.message||String(error));console.error(error);}
 }
   
+
 const menuToggle = document.getElementById("menu-toggle");
 const mainMenu = document.getElementById("main-menu");
 
-if(menuToggle && mainMenu){
-  menuToggle.addEventListener("click",()=>{  const isOpen = !mainMenu.classList.contains("hidden");
-  mainMenu.classList.toggle("hidden",isOpen);
-  menuToggle.setAttribute("aria-expanded",String(!isOpen));
-});
+if (menuToggle && mainMenu) {
 
-mainMenu.querySelectorAll("button").forEach(button=>{
-  button.addEventListener("click",()=>{
-    mainMenu.classList.add("hidden");
-    menuToggle.setAttribute("aria-expanded","false");
+  menuToggle.addEventListener("click", () => {
+    const isOpen = !mainMenu.classList.contains("hidden");
+
+    mainMenu.classList.toggle("hidden", isOpen);
+    menuToggle.setAttribute("aria-expanded", String(!isOpen));
   });
-});
+
+  mainMenu.querySelectorAll("button").forEach(button => {
+    button.addEventListener("click", () => {
+      mainMenu.classList.add("hidden");
+      menuToggle.setAttribute("aria-expanded", "false");
+    });
+  });
+
 }
-  
 
 
+
+const challengeNotificationButton = document.getElementById("challenge-notification-button");
+
+if (challengeNotificationButton) {
+  challengeNotificationButton.addEventListener("click", () => {
+    const challengesButton = document.querySelector('#main-menu button[data-tab="challenges"]');
+    showTab("challenges", challengesButton);
+  });
+}
 startApp();
 </script>
 </body>

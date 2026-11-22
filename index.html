@@ -329,6 +329,10 @@
   <button data-tab="players" onclick="showTab('players',this)">Παίκτες / Σύνδεση</button>
   <button data-tab="rules" onclick="showTab('rules',this)">Κανόνες & Έπαθλα</button>
   <button data-tab="hall-of-fame" onclick="showTab('hall-of-fame',this)">Hall of Fame 🏆</button>
+   <button data-tab="chat" id="chat-nav-button"
+  class="hidden" onclick="showTab('chat',this)">
+  Chat Room 💬
+</button>
 </nav>
   <section id="ranking" class="panel">
     <h2>Επίσημη κατάταξη</h2><p class="intro">Η κατάταξη ενημερώνεται από την κοινή βάση δεδομένων.</p>
@@ -493,6 +497,32 @@
     <div id="champions-history"></div>
   </div>
 </section>
+  <section id="chat" class="hidden">
+  <div class="card">
+    <h2>💬 NorthGrip Players</h2>
+    <p>Η κοινότητα των παικτών της NorthGrip.</p>
+
+    <div id="chat-messages"
+         style="height:350px;overflow-y:auto;padding:12px;background:#f5f7f5;border-radius:12px;">
+      <p>Φόρτωση μηνυμάτων...</p>
+    </div>
+
+    <div id="chat-compose" class="hidden">
+      <textarea
+        id="chat-message"
+        maxlength="1000"
+        placeholder="Γράψε το μήνυμά σου..."
+        rows="3">
+      </textarea>
+
+      <button type="button" id="send-chat-message" class="action">
+        Αποστολή 💬
+      </button>
+    </div>
+
+    <p id="chat-status" role="status"></p>
+  </div>
+</section>
 
 </main>
 <footer>FLORINA TENNIS LADDER · NORTHGRIP</footer>
@@ -508,13 +538,16 @@ let currentUser = null;
 let currentProfile = null;
 
 function showTab(id,button){
-  ["ranking","challenges","players","rules","hall-of-fame"].forEach(tabId=>{
+ ["ranking","challenges","players","rules","hall-of-fame","chat"].forEach(tabId=>{
     document.getElementById(tabId).classList.toggle("hidden",tabId!==id);
   });
 
   document.querySelectorAll("nav button").forEach(btn=>btn.classList.remove("active"));
 
   if(button) button.classList.add("active");
+  if(id === "chat"){
+  loadChatMessages();
+}
 }
 function escapeHTML(value){return String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[char]));}
 function setAuthMessage(message,isError=false){
@@ -1394,7 +1427,23 @@ const user = session?.user || null;
     if(!user){
   currentUser = null;
   currentProfile = null;
-
+      const chatNavButton = document.getElementById("chat-nav-button");
+if(chatNavButton){
+  chatNavButton.classList.add("hidden");
+}
+      const chatCompose = document.getElementById("chat-compose");
+if(chatCompose){
+  chatCompose.classList.add("hidden");
+}
+      
+if(chatChannel){
+  supabaseClient.removeChannel(chatChannel);
+  chatChannel = null;
+}
+      const chatBox = document.getElementById("chat-messages");
+if(chatBox){
+  chatBox.textContent = "Συνδέσου για να δεις τα μηνύματα.";
+}
   authStatus.textContent = "Δεν είσαι συνδεδεμένος.";
   authForms.classList.remove("hidden");
   signedControls.classList.add("hidden");
@@ -1414,6 +1463,24 @@ const user = session?.user || null;
 
     if(profileError) throw profileError;
     currentProfile = profile;
+    const chatNavButton = document.getElementById("chat-nav-button");
+if(chatNavButton){
+  chatNavButton.classList.toggle(
+    "hidden",
+    profile?.status !== "approved"
+  );
+}
+    if(profile?.status === "approved"){
+  subscribeToChat();
+}
+    const chatCompose = document.getElementById("chat-compose");
+
+if(chatCompose){
+  chatCompose.classList.toggle(
+    "hidden",
+    !(profile?.status === "approved")
+  );
+}
     const championAdminForm = document.getElementById("champion-admin-form");
 
 if(championAdminForm){
@@ -1431,11 +1498,22 @@ if(championAdminForm){
     }
 
     if(profile.status !== "approved"){
-      authStatus.textContent =
-        "Συνδεδεμένος: " + profile.full_name +
-        " — Η αίτησή σου περιμένει έγκριση.";
-      adminSection.classList.add("hidden");
-      return;
+  if(chatChannel){
+    supabaseClient.removeChannel(chatChannel);
+    chatChannel = null;
+  }
+
+  const chatBox = document.getElementById("chat-messages");
+  if(chatBox){
+    chatBox.textContent = "Το Chat είναι διαθέσιμο μόνο σε εγκεκριμένους παίκτες.";
+  }
+
+  authStatus.textContent =
+    "Συνδεδεμένος: " + profile.full_name +
+    " — Η αίτησή σου περιμένει έγκριση.";
+  adminSection.classList.add("hidden");
+  return;
+}
     }
 
     authStatus.textContent =
@@ -1451,8 +1529,8 @@ if(championAdminForm){
     }
 
     await loadChallenges();
-    await loadRanking();
-
+await loadRanking();
+await loadChatMessages();
   }catch(error){
     console.error("Σφάλμα ανανέωσης σύνδεσης:",error);
     document.getElementById("auth-status").textContent =
@@ -1656,6 +1734,157 @@ async function loadChampions(){
     select.innerHTML = '<option value="">Αδυναμία φόρτωσης παικτών</option>';
   }
 }
+let chatChannel = null;
+
+function subscribeToChat(){
+  if(chatChannel) return;
+
+  chatChannel = supabaseClient
+    .channel("northgrip-player-chat")
+    .on(
+      "postgres_changes",
+      {
+        event:"*",
+        schema:"public",
+        table:"player_chat_messages"
+      },
+      ()=>{
+        loadChatMessages();
+      }
+    )
+    .subscribe();
+}
+  
+  async function loadChatMessages(){
+  const box = document.getElementById("chat-messages");
+  if(!box || !currentProfile || currentProfile.status !== "approved") return;
+
+  try{
+    const {data,error} = await supabaseClient
+      .from("player_chat_messages")
+      .select("id,player_id,message,created_at")
+      .order("created_at",{ascending:true})
+      .limit(100);
+
+    if(error) throw error;
+
+    if(!data || data.length === 0){
+      box.textContent = "Δεν υπάρχουν ακόμη μηνύματα.";
+      return;
+    }
+
+    const playerIds = [...new Set(data.map(item=>item.player_id))];
+
+    const {data:players,error:playersError} = await supabaseClient
+  .from("ladder_public")
+  .select("player_id,full_name")
+  .in("player_id",playerIds);
+
+if(playersError) throw playersError;
+
+const names = {};
+(players || []).forEach(player=>{
+  names[player.player_id] = player.full_name;
+});
+
+    box.replaceChildren();
+
+    data.forEach(item=>{
+      const messageCard = document.createElement("div");
+      messageCard.style.cssText =
+        "background:white;padding:10px;margin-bottom:8px;border-radius:10px;";
+
+      const author = document.createElement("strong");
+      author.textContent = names[item.player_id] || "Παίκτης";
+
+      const content = document.createElement("p");
+      content.textContent = item.message;
+      content.style.margin = "6px 0";
+
+      const date = document.createElement("small");
+      date.textContent = new Date(item.created_at).toLocaleString("el-GR");
+
+      messageCard.append(author,content,date);
+
+      if(currentProfile.is_admin){
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.textContent = "Διαγραφή";
+        deleteButton.addEventListener("click",()=>deleteChatMessage(item.id));
+        messageCard.appendChild(deleteButton);
+      }
+
+      box.appendChild(messageCard);
+    });
+
+    box.scrollTop = box.scrollHeight;
+
+  }catch(error){
+    console.error("Σφάλμα φόρτωσης Chat:",error);
+    box.textContent = "Δεν ήταν δυνατή η φόρτωση των μηνυμάτων.";
+  }
+}
+  async function sendChatMessage(){
+  const input = document.getElementById("chat-message");
+  const status = document.getElementById("chat-status");
+  const message = input.value.trim();
+
+  if(!currentProfile || currentProfile.status !== "approved"){
+    status.textContent = "Δεν έχεις δικαίωμα αποστολής.";
+    return;
+  }
+
+  if(!message){
+    status.textContent = "Γράψε πρώτα ένα μήνυμα.";
+    return;
+  }
+
+  try{
+    status.textContent = "Αποστολή...";
+
+    const {error} = await supabaseClient
+      .from("player_chat_messages")
+      .insert({
+        player_id:currentProfile.id,
+        message:message
+      });
+
+    if(error) throw error;
+
+    input.value = "";
+    status.textContent = "Το μήνυμα στάλθηκε!";
+    await loadChatMessages();
+
+  }catch(error){
+    console.error("Σφάλμα αποστολής μηνύματος:",error);
+    status.textContent = "Σφάλμα: " + error.message;
+  }
+}
+  async function deleteChatMessage(messageId){
+  if(!currentProfile?.is_admin || currentProfile.status !== "approved"){
+    return;
+  }
+
+  if(!confirm("Θέλεις σίγουρα να διαγράψεις αυτό το μήνυμα;")){
+    return;
+  }
+
+  try{
+    const {error} = await supabaseClient
+      .from("player_chat_messages")
+      .delete()
+      .eq("id",messageId);
+
+    if(error) throw error;
+
+    await loadChatMessages();
+
+  }catch(error){
+    console.error("Σφάλμα διαγραφής μηνύματος:",error);
+    document.getElementById("chat-status").textContent =
+      "Σφάλμα διαγραφής: " + error.message;
+  }
+}
   async function saveChampion(){
   const message = document.getElementById("champion-admin-message");
   const playerId = document.getElementById("champion-player").value;
@@ -1723,6 +1952,7 @@ async function loadChampions(){
 }
   document.getElementById("save-champion")
   .addEventListener("click", saveChampion);
+  document.getElementById("send-chat-message").addEventListener("click", sendChatMessage);
 async function startApp(){
   const leaderboard=document.getElementById("leaderboard");
   if(!window.supabase||typeof window.supabase.createClient!=="function"){leaderboard.textContent="Δεν φορτώθηκε η βιβλιοθήκη Supabase.";return;}

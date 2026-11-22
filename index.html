@@ -1551,7 +1551,12 @@ const { error: notificationError } =
   });
 
 if (notificationError) {
-  console.error("Σφάλμα ειδοποίησης:", notificationError);
+  let details = "";
+  try {
+    details = await notificationError.context.clone().text();
+  } catch (e) {}
+
+  console.error("Σφάλμα ειδοποίησης:", notificationError.message, details);
 }
 
 message.textContent = "Η πρόκληση στάλθηκε επιτυχώς!";

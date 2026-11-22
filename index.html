@@ -1162,29 +1162,27 @@ async function loadChallenges(){
     busyPlayers.add(c.opponent_id);
   });
 
-  if(me){
-    const candidates=players
-      .filter(p=>
-        p.position<me.position &&
-        p.is_available!==false
-      )
-      .sort((a,b)=>a.position-b.position);
+ 
+ 
+if(me){
+  const candidates=players
+    .filter(p=>
+      p.position < me.position &&
+      p.position >= me.position - 3 &&
+      p.is_available !== false &&
+      !busyPlayers.has(p.id)
+    )
+    .sort((a,b)=>a.position-b.position)
+    .slice(0,3);
 
-    let counted=0;
+  candidates.forEach(p=>{
+    const option=document.createElement("option");
+    option.value=p.id;
+    option.textContent=`${p.position}. ${p.name}`;
+    select.appendChild(option);
+  });
+}
 
-    for(const p of candidates){
-      if(counted>=3) break;
-
-      counted++;
-
-      if(busyPlayers.has(p.id)) continue;
-
-      const option=document.createElement("option");
-      option.value=p.id;
-      option.textContent=`${p.position}. ${p.name}`;
-      select.appendChild(option);
-    }
-  }
 
 
   list.textContent="Φόρτωση προκλήσεων…";

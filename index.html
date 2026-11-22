@@ -38,16 +38,39 @@
 }
 
 
-.menu-toggle{
-  background:#174d35;
-  color:white;
-  border:0;
+
+.challenge-notification-button{
+  position:relative;
+  background:white;
+  color:#174d35;
+  border:1px solid #dce5dc;
   border-radius:10px;
-  padding:12px 20px;
-  font-size:16px;
-  font-weight:700;
+  padding:10px 14px;
+  font-size:22px;
   cursor:pointer;
 }
+
+#challenge-notification-count{
+  position:absolute;
+  top:-7px;
+  right:-7px;
+  background:#dc2626;
+  color:white;
+  border-radius:50%;
+  min-width:19px;
+  height:19px;
+  padding:0 4px;
+  font-size:12px;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+#challenge-notification-count.hidden{
+  display:none;
+}
+
 
 .main-menu{
   position:absolute;
@@ -378,7 +401,15 @@
 
 
  
+
 <div class="menu-wrapper">
+  <button type="button" id="challenge-notification-button"
+    class="challenge-notification-button hidden"
+    aria-label="Νέες προκλήσεις">
+    🔔
+    <span id="challenge-notification-count" class="hidden">0</span>
+  </button>
+
   <button type="button" id="menu-toggle" class="menu-toggle"
     aria-expanded="false" aria-controls="main-menu">
     ☰ Μενού
@@ -393,7 +424,7 @@
       onclick="showTab('challenges',this)">Προκλήσεις</button>
 
     <button data-tab="players"
-      onclick="showTab('players',this)"> Σύνδεση</button>
+      onclick="showTab('players',this)">Σύνδεση</button>
 
     <button data-tab="rules"
       onclick="showTab('rules',this)">Κανόνες & Έπαθλα</button>
@@ -402,6 +433,7 @@
       onclick="showTab('hall-of-fame',this)">Hall of Fame 🏆</button>
   </nav>
 </div>
+
 
   <section id="ranking" class="panel">
     <h2>Επίσημη κατάταξη</h2><p class="intro">Η κατάταξη ενημερώνεται από την κοινή βάση δεδομένων.</p>

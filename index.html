@@ -1530,8 +1530,7 @@ document.getElementById("create-challenge-button").addEventListener("click", asy
   button.textContent = "Αποστολή…";
   message.textContent = "";
 
-  try{
-const { data, error } = await supabaseClient
+  try{const result = await supabaseClient
   .from("challenges")
   .insert({
     challenger_id: currentProfile.id,
@@ -1541,12 +1540,13 @@ const { data, error } = await supabaseClient
   })
   .select("id")
   .single();
-if (error) throw error;
+
+if (result.error) throw result.error;
 
 const { error: notificationError } =
   await supabaseClient.functions.invoke("smooth-endpoint", {
     body: {
-      challenge_id: data.id
+      challenge_id: result.data.id
     }
   });
 

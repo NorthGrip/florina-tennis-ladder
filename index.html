@@ -1611,6 +1611,14 @@ if(chatBox){
 
     if(profileError) throw profileError;
     currentProfile = profile;
+    const pushButton = document.getElementById("enable-push-button");
+
+if (pushButton) {
+  pushButton.classList.toggle(
+    "hidden",
+    profile?.status !== "approved"
+  );
+}
     const chatNavButton = document.getElementById("chat-nav-button");
 if(chatNavButton){
   chatNavButton.classList.toggle(

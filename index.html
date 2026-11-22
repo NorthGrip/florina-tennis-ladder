@@ -1553,8 +1553,7 @@ const { error: notificationError } =
 if (notificationError) {
   let details = "";
   try {
-    details = await notificationError.context.clone().text();
-  } catch (e) {}
+details = await notificationError.context.text();  } catch (e) {}
 
   console.error("Σφάλμα ειδοποίησης:", notificationError.message, details);
 }

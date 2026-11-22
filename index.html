@@ -1531,22 +1531,28 @@ document.getElementById("create-challenge-button").addEventListener("click", asy
   message.textContent = "";
 
   try{
-    const {error} = await supabaseClient
-      .from("challenges")
-      .insert({
-        challenger_id: currentProfile.id,
-        opponent_id: opponentId,
-        status: "pending",
-        proposed_at: new Date().toISOString()
-      });
+const { data, error } = await supabaseClient
+  .from("challenges")
+  .insert({
+    challenger_id: currentProfile.id,
+    opponent_id: opponentId,
+    status: "pending",
+    proposed_at: new Date().toISOString()
+  })
+  .select("id")
+  .single();
+if (error) throw error;
 
-    if(error) throw error;
-        const { error: notificationError } =
-      await supabaseClient.functions.invoke("smooth-endpoint", {
-        body: {
-          challenge_id: data?.id
-        }
-      });
+const { error: notificationError } =
+  await supabaseClient.functions.invoke("smooth-endpoint", {
+    body: {
+      challenge_id: data.id
+    }
+  });
+
+if (notificationError) {
+  console.error("Σφάλμα ειδοποίησης:", notificationError);
+}
 
     message.textContent = "Η πρόκληση στάλθηκε επιτυχώς!";
     select.value = "";

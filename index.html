@@ -1472,6 +1472,23 @@ if(me){
   });
 }
 
+  // Ενημέρωση καμπανακιού νέων προκλήσεων
+  const notificationButton = document.getElementById("challenge-notification-button");
+  const notificationCount = document.getElementById("challenge-notification-count");
+
+  const receivedChallenges = (data || []).filter(c =>
+    c.opponent_id === currentProfile.id &&
+    c.status === "pending"
+  );
+
+  if(notificationButton && notificationCount){
+    notificationButton.classList.remove("hidden");
+
+    const count = receivedChallenges.length;
+    notificationCount.textContent = count > 99 ? "99+" : String(count);
+    notificationCount.classList.toggle("hidden", count === 0);
+  }
+
 async function respondToChallenge(button){
   const id=button.dataset.id;
   const response=button.dataset.response;
@@ -2123,6 +2140,16 @@ mainMenu.querySelectorAll("button").forEach(button=>{
   });
 });
 }
+  
+const challengeNotificationButton = document.getElementById("challenge-notification-button");
+
+if(challengeNotificationButton){
+  challengeNotificationButton.addEventListener("click",()=>{
+    const challengesButton = document.querySelector('#main-menu button[data-tab="challenges"]');
+    showTab("challenges", challengesButton);
+  });
+}
+
 startApp();
 </script>
 </body>

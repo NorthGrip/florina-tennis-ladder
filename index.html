@@ -439,38 +439,36 @@
     <h2>Επίσημη κατάταξη</h2><p class="intro">Η κατάταξη ενημερώνεται από την κοινή βάση δεδομένων.</p>
     <div id="leaderboard" class="loading">Γίνεται σύνδεση με τη βάση δεδομένων…</div><div id="connection-message" class="notice hidden"></div>
   </section>
-  <section id="challenges" class="panel hidden">
-  <h2>Προκλήσεις</h2>
+  <section id="ranking" class="panel">
+  <h2>Επίσημη κατάταξη</h2>
+
   <p class="intro">
-    Προκάλεσε έναν από τους τρεις παίκτες που βρίσκονται ψηλότερα από εσένα.
+    Η κατάταξη ενημερώνεται από την κοινή βάση δεδομένων.
   </p>
 
-  <div id="challenge-login-notice" class="notice">
-    Συνδέσου για να δημιουργήσεις ή να δεις τις προκλήσεις σου.
+  <div class="notice" style="margin-bottom:16px;">
+    <h3 style="margin-top:0;">🔔 Ειδοποιήσεις προκλήσεων</h3>
+
+    <p class="intro">
+      Λάβε ειδοποίηση όταν κάποιος παίκτης σε προκαλεί σε αγώνα.
+    </p>
+
+    <button id="enable-push-button"
+      class="hidden" type="button">
+      🔔 Ενεργοποίηση ειδοποιήσεων
+    </button>
+
+    <button id="disable-push-button"
+      class="hidden" type="button">
+      🔕 Απενεργοποίηση ειδοποιήσεων
+    </button>
   </div>
 
-  <div id="challenge-controls" class="hidden">
-    <h3>Νέα πρόκληση</h3>
-    <div class="field">
-      <label for="opponent-select">Επίλεξε αντίπαλο</label>
-      <select id="opponent-select"
-        style="width:100%;padding:12px;border:1px solid var(--line);border-radius:9px;font-size:16px">
-        <option value="">Επίλεξε παίκτη</option>
-      </select>
-    </div>
-    <div class="actions">
-      <button id="create-challenge-button" class="action" type="button">
-        Αποστολή πρόκλησης
-      </button>
-    </div>
-
-    <div id="challenge-message" class="statusline"></div>
-
-    <h3>Οι προκλήσεις μου</h3>
-    <div id="challenges-list" class="loading">
-      Φόρτωση προκλήσεων…
-    </div>
+  <div id="leaderboard" class="loading">
+    Γίνεται σύνδεση με τη βάση δεδομένων…
   </div>
+
+  <div id="connection-message" class="notice hidden"></div>
 </section>
   <section id="players" class="panel hidden">
     <h2>Παίκτες</h2><p class="intro">Εγγραφή νέου παίκτη, σύνδεση και έγκριση από διαχειριστή.</p>
@@ -2312,11 +2310,7 @@ if (disablePushButton) {
 });
 startApp();
 </script>
-  <button id="enable-push-button" class="hidden" type="button">
-  🔔 Ενεργοποίηση ειδοποιήσεων
-</button>
-  <button id="disable-push-button" class="hidden" type="button">
-  🔕 Απενεργοποίηση ειδοποιήσεων
-</button>
+ 
 </body>
 </html>
+

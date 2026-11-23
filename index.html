@@ -1627,12 +1627,41 @@ if(chatBox){
 
     if(profileError) throw profileError;
     currentProfile = profile;
-    const pushButton = document.getElementById("enable-push-button");
+    const isApproved = profile?.status === "approved";
 
-if (pushButton) {
-  pushButton.classList.toggle(
+let hasPushSubscription = false;
+
+if (
+  isApproved &&
+  "serviceWorker" in navigator &&
+  "PushManager" in window
+) {
+const registration = await navigator.serviceWorker.ready;
+  if (registration) {
+    const subscription =
+      await registration.pushManager.getSubscription();
+
+    hasPushSubscription = !!subscription;
+  }
+}
+
+const enablePushButton =
+  document.getElementById("enable-push-button");
+
+const disablePushButton =
+  document.getElementById("disable-push-button");
+
+if (enablePushButton) {
+  enablePushButton.classList.toggle(
     "hidden",
-    profile?.status !== "approved"
+    !isApproved || hasPushSubscription
+  );
+}
+
+if (disablePushButton) {
+  disablePushButton.classList.toggle(
+    "hidden",
+    !isApproved || !hasPushSubscription
   );
 }
     const chatNavButton = document.getElementById("chat-nav-button");

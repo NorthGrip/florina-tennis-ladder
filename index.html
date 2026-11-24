@@ -1398,7 +1398,7 @@ async function approvePlayer(playerId,button){
 }
 document.getElementById("signup-form").addEventListener("submit",async event=>{
   event.preventDefault();setAuthMessage("Γίνεται η εγγραφή…");
-  alert("Notification: " + ("Notification" in window) + " | Permission: " + (("Notification" in window) ? Notification.permission : "μη διαθέσιμο"));
+  
   const full_name=document.getElementById("signup-name").value.trim();
   const phone=document.getElementById("signup-phone").value.trim();
   const email=document.getElementById("signup-email").value.trim();
@@ -1413,15 +1413,11 @@ document.getElementById("signup-form").addEventListener("submit",async event=>{
   event.target.reset();
 });
 document.getElementById("login-form").addEventListener("submit",async event=>{
-event.preventDefault();
-  alert("Notification: " + ("Notification" in window) + " | Permission: " + (("Notification" in window) ? Notification.permission : "μη διαθέσιμο"));
-if ("Notification" in window && Notification.permission === "default") {
-  const permission = await Notification.requestPermission();
-  alert("Νέα κατάσταση άδειας: " + permission);
-}
-if ("Notification" in window && Notification.permission === "default") {
-  await Notification.requestPermission();
-}
+  event.preventDefault();
+
+  if ("Notification" in window && Notification.permission === "default") {
+    await Notification.requestPermission();
+  }
 
 setAuthMessage("Γίνεται σύνδεση…");
   const email=document.getElementById("login-email").value.trim(),password=document.getElementById("login-password").value;

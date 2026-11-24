@@ -1464,7 +1464,18 @@ if(me){
     }else if(match?.status==="rejected"){
       resultInfo='<div class="small">Το προηγούμενο αποτέλεσμα απορρίφθηκε. Μπορεί να υποβληθεί ξανά.</div>';
     }
-
+if(c.status==="accepted" && isParticipant &&
+   (!match || match.status==="rejected")){
+  resultButton = `
+    <button class="action submit-result-button"
+      data-id="${escapeHTML(c.id)}"
+      data-challenger="${escapeHTML(c.challenger_id)}"
+      data-opponent="${escapeHTML(c.opponent_id)}"
+      type="button">
+      Καταχώρηση αποτελέσματος
+    </button>
+  `;
+}
     if(c.status==="accepted" && isParticipant){
   const scheduledValue = c.scheduled_at
     ? new Date(new Date(c.scheduled_at).getTime() -

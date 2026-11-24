@@ -220,44 +220,33 @@
     font-weight: 800;
   }
 
-  #ladder-timer {
-    padding: 23px 18px;
-    border: 1px solid rgba(200,227,106,.65);
-    background: linear-gradient(145deg, #ffffff, #f5f8ed);
-  }
+ #ladder-timer {
+  padding: 10px 14px;
+  border: 1px solid rgba(200,227,106,.65);
+  background: linear-gradient(145deg, #ffffff, #f5f8ed);
+}
 
-  #ladder-timer h2 {
-    color: var(--green);
-    font-size: 22px;
-    font-weight: 800;
-  }
+#ladder-timer h2 {
+  color: var(--green);
+  font-size: 17px;
+  font-weight: 800;
+  margin: 3px 0;
+}
 
-  #ladder-timer-status { color: var(--muted); font-weight: 600; }
-  #ladder-countdown {
-    color: var(--green);
-    font-size: clamp(17px, 3.5vw, 25px) !important;
-    font-weight: 800;
-    line-height: 1.5;
-    overflow-wrap: anywhere;
-  }
+#ladder-timer-status {
+  color: var(--muted);
+  font-weight: 600;
+  margin: 3px 0;
+}
 
-  nav { gap: 9px; padding: 2px 1px 7px; }
-  nav button {
-    border: 1px solid #dce6dc;
-    padding: 11px 17px;
-    font-family: inherit;
-    font-size: 13px;
-    transition: background .18s ease, color .18s ease, transform .18s ease;
-  }
-  nav button.active {
-    background: var(--green);
-    box-shadow: 0 4px 12px rgba(18,59,45,.16);
-  }
-
-  .panel { padding: 21px; }
-  .panel h2 { color: var(--green); font-weight: 800; }
-  .intro { margin-top: 5px; }
-
+#ladder-countdown {
+  color: var(--green);
+  font-size: clamp(14px, 2.5vw, 19px) !important;
+  font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  margin: 4px 0;
+}
   /* Four pieces of player information: rank, name, record and availability */
   .player {
     display: grid;

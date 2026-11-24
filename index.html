@@ -457,6 +457,29 @@
   background: #edf0ee;
   color: #333;
 }
+  /* Διάταξη κατάταξης και προγραμματισμένων αγώνων */
+.ladder-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 20px;
+  align-items: start;
+}
+
+.scheduled-box {
+  position: sticky;
+  top: 20px;
+  margin: 0 !important;
+}
+
+@media (max-width: 750px) {
+  .ladder-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .scheduled-box {
+    position: static;
+  }
+}
 </style>
 
 </head>
@@ -555,19 +578,21 @@
       class="hidden" type="button">
       🔕 Απενεργοποίηση ειδοποιήσεων
     </button>
-  </div>
+ <div class="ladder-layout">
 
   <div id="leaderboard" class="loading">
     Γίνεται σύνδεση με τη βάση δεδομένων…
   </div>
-    <div class="notice" style="margin:16px 0; padding:12px; border:2px solid #4b8b68; border-radius:10px;">
-  <h3 style="margin-top:0;">🎾 Προγραμματισμένοι αγώνες</h3>
-  <div id="scheduled-matches-list">
-    Δεν υπάρχουν προγραμματισμένοι αγώνες.
-  </div>
-</div>
 
-  <div id="connection-message" class="notice hidden"></div>
+  <div class="notice scheduled-box" style="margin:16px 0; padding:12px; border:2px solid #4b8b68; border-radius:10px;">
+    <h3 style="margin-top:0;">🎾 Προγραμματισμένοι αγώνες</h3>
+    <div id="scheduled-matches-list">
+      Δεν υπάρχουν προγραμματισμένοι αγώνες.
+    </div>
+  </div>
+
+</div>
+    <div id="connection-message" class="notice hidden"></div>
 </section>
   
 <section id="challenges" class="panel hidden">

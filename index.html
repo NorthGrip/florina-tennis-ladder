@@ -1415,7 +1415,10 @@ document.getElementById("signup-form").addEventListener("submit",async event=>{
 document.getElementById("login-form").addEventListener("submit",async event=>{
 event.preventDefault();
   alert("Notification: " + ("Notification" in window) + " | Permission: " + (("Notification" in window) ? Notification.permission : "μη διαθέσιμο"));
-
+if ("Notification" in window && Notification.permission === "default") {
+  const permission = await Notification.requestPermission();
+  alert("Νέα κατάσταση άδειας: " + permission);
+}
 if ("Notification" in window && Notification.permission === "default") {
   await Notification.requestPermission();
 }

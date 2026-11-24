@@ -463,6 +463,12 @@
   <div id="leaderboard" class="loading">
     Γίνεται σύνδεση με τη βάση δεδομένων…
   </div>
+    <div class="notice" style="margin:16px 0; padding:12px; border:2px solid #4b8b68; border-radius:10px;">
+  <h3 style="margin-top:0;">🎾 Προγραμματισμένοι αγώνες</h3>
+  <div id="scheduled-matches-list">
+    Δεν υπάρχουν προγραμματισμένοι αγώνες.
+  </div>
+</div>
 
   <div id="connection-message" class="notice hidden"></div>
 </section>
@@ -886,7 +892,7 @@ async function loadRanking(){
     if(matchesError) throw matchesError;
 
     renderPlayers();
-
+await loadScheduledMatches();
     document.getElementById("matches").textContent =
       matchCount.total_matches;
 
@@ -907,7 +913,46 @@ async function loadRanking(){
     message.classList.add("error");
   }
 }
+async function loadScheduledMatches(){
+  const list = document.getElementById("scheduled-matches-list");
+  if(!list) return;
 
+  list.textContent = "Φόρτωση προγραμματισμένων αγώνων…";
+
+  try{
+    const {data,error} = await supabaseClient
+      .from("scheduled_matches_public")
+      .select("id,scheduled_at,challenger_position,challenger_name,opponent_position,opponent_name")
+      .order("scheduled_at",{ascending:true});
+
+    if(error) throw error;
+
+    if(!data || data.length === 0){
+      list.textContent = "Δεν υπάρχουν προγραμματισμένοι αγώνες.";
+      return;
+    }
+
+    list.innerHTML = data.map(match => `
+      <div class="pending-item">
+        <strong>
+          ${escapeHTML(match.challenger_name || "Παίκτης")}
+          – 
+          ${escapeHTML(match.opponent_name || "Παίκτης")}
+        </strong>
+        <div class="small">
+          ${new Date(match.scheduled_at).toLocaleString("el-GR",{
+            dateStyle:"long",
+            timeStyle:"short"
+          })}
+        </div>
+      </div>
+    `).join("");
+
+  }catch(error){
+    console.error("Σφάλμα προγραμματισμένων αγώνων:",error);
+    list.textContent = "Δεν ήταν δυνατή η φόρτωση των προγραμματισμένων αγώνων.";
+  }
+}
 async function updateMyAvailability(isAvailable) {
   const { data, error } = await supabaseClient.rpc(
     "set_ladder_availability",
@@ -1353,7 +1398,7 @@ if(me){
 
   const {data,error}=await supabaseClient
     .from("challenges")
-    .select("id,challenger_id,opponent_id,status,proposed_at,created_at")
+    .select("id,challenger_id,opponent_id,status,proposed_at,created_at,scheduled_at")
     .order("created_at",{ascending:false});
 
   if(error){
@@ -1410,6 +1455,7 @@ if(me){
 
     let resultInfo="";
     let resultButton="";
+    let scheduleControls="";
 
     if(match?.status==="pending"){
       resultInfo='<div class="small">Το αποτέλεσμα περιμένει έγκριση διαχειριστή.</div>';
@@ -1419,18 +1465,24 @@ if(me){
       resultInfo='<div class="small">Το προηγούμενο αποτέλεσμα απορρίφθηκε. Μπορεί να υποβληθεί ξανά.</div>';
     }
 
-    if(c.status==="accepted" && isParticipant &&
-       (!match || match.status==="rejected")){
-      resultButton=`
-        <button
-          class="action submit-result-button"
-          data-id="${escapeHTML(c.id)}"
-          data-challenger="${escapeHTML(c.challenger_id)}"
-          data-opponent="${escapeHTML(c.opponent_id)}">
-          Καταχώρηση αποτελέσματος
-        </button>
-      `;
-    }
+    if(c.status==="accepted" && isParticipant){
+  const scheduledValue = c.scheduled_at
+    ? new Date(new Date(c.scheduled_at).getTime() -
+        new Date(c.scheduled_at).getTimezoneOffset()*60000)
+        .toISOString().slice(0,16)
+    : "";
+
+  scheduleControls = `
+    <div style="margin-top:10px;">
+      <label>Ημερομηνία και ώρα αγώνα</label>
+      <input class="schedule-input" type="datetime-local"
+        value="${scheduledValue}">
+      <button class="action schedule-button" data-id="${escapeHTML(c.id)}" type="button">
+        Αποθήκευση ημερομηνίας
+      </button>
+    </div>
+  `;
+}
 
     return `
       <div class="pending-item">
@@ -1443,6 +1495,7 @@ if(me){
             · ${new Date(c.proposed_at||c.created_at).toLocaleDateString("el-GR")}
           </div>
           ${resultInfo}
+          ${scheduleControls}
         </div>
 
         <div class="actions">
@@ -1513,6 +1566,38 @@ if(me){
       await loadChallenges();
     });
   });
+  list.querySelectorAll(".schedule-button").forEach(button=>{
+  button.addEventListener("click",async()=>{
+    const card=button.closest(".pending-item");
+    const input=card.querySelector(".schedule-input");
+
+    if(!input.value){
+      alert("Επίλεξε ημερομηνία και ώρα.");
+      return;
+    }
+
+    const scheduledAt=new Date(input.value).toISOString();
+
+    button.disabled=true;
+    button.textContent="Αποθήκευση…";
+
+    const {error}=await supabaseClient.rpc("set_challenge_schedule",{
+      target_challenge_id:button.dataset.id,
+      target_scheduled_at:scheduledAt
+    });
+
+    if(error){
+      alert("Δεν αποθηκεύτηκε η ημερομηνία: "+error.message);
+      button.disabled=false;
+      button.textContent="Αποθήκευση ημερομηνίας";
+      return;
+    }
+
+    alert("Η ημερομηνία αγώνα αποθηκεύτηκε.");
+    await loadChallenges();
+    await loadScheduledMatches();
+  });
+});
 }
 
 async function respondToChallenge(button){

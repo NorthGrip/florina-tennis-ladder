@@ -360,6 +360,103 @@
       animation-duration: .01ms !important;
     }
   }
+  #result-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+#result-modal.hidden {
+  display: none;
+}
+
+.result-modal-content {
+  width: 100%;
+  max-width: 420px;
+  background: white;
+  color: #18352a;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+}
+
+.result-modal-content h2 {
+  text-align: center;
+  margin-top: 0;
+  color: #245b40;
+}
+
+.result-modal-content p {
+  text-align: center;
+  color: #666;
+}
+
+#result-player-options {
+  display: grid;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.result-player-option {
+  padding: 15px;
+  border: 2px solid #d8e4dc;
+  border-radius: 12px;
+  background: #f7faf8;
+  color: #18352a;
+  font-weight: bold;
+  cursor: pointer;
+  text-align: center;
+}
+
+.result-player-option.selected {
+  border-color: #328653;
+  background: #e4f4e9;
+}
+
+.result-modal-content label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+#result-score {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px;
+  border: 2px solid #d8e4dc;
+  border-radius: 10px;
+  font-size: 17px;
+  margin-bottom: 18px;
+}
+
+.result-modal-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.result-modal-actions button {
+  padding: 13px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#save-result-button {
+  background: #287447;
+  color: white;
+}
+
+#cancel-result-button {
+  background: #edf0ee;
+  color: #333;
+}
 </style>
 
 </head>
@@ -1525,58 +1622,93 @@ if(c.status==="accepted" && isParticipant &&
   });
 
   list.querySelectorAll(".submit-result-button").forEach(button=>{
-    button.addEventListener("click",async()=>{
-      const challengerId=button.dataset.challenger;
-      const opponentId=button.dataset.opponent;
+  button.addEventListener("click",()=>{
+    const challengerId=button.dataset.challenger;
+    const opponentId=button.dataset.opponent;
 
-      const challenger=players.find(p=>p.id===challengerId);
-      const opponent=players.find(p=>p.id===opponentId);
+    const challenger=players.find(p=>p.id===challengerId);
+    const opponent=players.find(p=>p.id===opponentId);
 
-      const choice=prompt(
-        `Ποιος κέρδισε;\n1 = ${challenger?.name||"Challenger"}\n2 = ${opponent?.name||"Opponent"}`
-      );
+    if(!challenger || !opponent){
+      alert("Δεν βρέθηκαν οι παίκτες του αγώνα.");
+      return;
+    }
 
-      if(choice===null) return;
+    const modal=document.getElementById("result-modal");
+    const options=document.getElementById("result-player-options");
+    const scoreInput=document.getElementById("result-score");
+    const saveButton=document.getElementById("save-result-button");
+    const cancelButton=document.getElementById("cancel-result-button");
 
-      if(choice!=="1" && choice!=="2"){
-        alert("Επίλεξε 1 ή 2.");
+    let selectedWinnerId=null;
+
+    options.innerHTML=`
+      <button type="button" class="result-player-option" data-winner="${escapeHTML(challengerId)}">
+        ${escapeHTML(challenger.name)}
+      </button>
+      <button type="button" class="result-player-option" data-winner="${escapeHTML(opponentId)}">
+        ${escapeHTML(opponent.name)}
+      </button>
+    `;
+
+    scoreInput.value="";
+    modal.classList.remove("hidden");
+
+    options.querySelectorAll(".result-player-option").forEach(option=>{
+      option.addEventListener("click",()=>{
+        selectedWinnerId=option.dataset.winner;
+
+        options.querySelectorAll(".result-player-option").forEach(item=>{
+          item.classList.remove("selected");
+        });
+
+        option.classList.add("selected");
+      });
+    });
+
+    cancelButton.onclick=()=>{
+      modal.classList.add("hidden");
+    };
+
+    saveButton.onclick=async()=>{
+      const score=scoreInput.value.trim();
+
+      if(!selectedWinnerId){
+        alert("Επίλεξε τον νικητή του αγώνα.");
         return;
       }
 
-      const winnerId=choice==="1"?challengerId:opponentId;
-
-      const score=prompt("Γράψε το τελικό σκορ (π.χ. 6-4, 6-3):");
-
-      if(score===null) return;
-
-      if(!score.trim()){
+      if(!score){
         alert("Πρέπει να συμπληρώσεις το σκορ.");
         return;
       }
 
-      button.disabled=true;
-      button.textContent="Υποβολή…";
+      saveButton.disabled=true;
+      saveButton.textContent="Υποβολή…";
 
       const {error}=await supabaseClient.rpc(
         "submit_ladder_result",
         {
           target_challenge_id:button.dataset.id,
-          target_winner_id:winnerId,
-          target_score:score.trim()
+          target_winner_id:selectedWinnerId,
+          target_score:score
         }
       );
 
+      saveButton.disabled=false;
+      saveButton.textContent="Υποβολή αποτελέσματος";
+
       if(error){
         alert("Δεν καταχωρήθηκε το αποτέλεσμα: "+error.message);
-        button.disabled=false;
-        button.textContent="Καταχώρηση αποτελέσματος";
         return;
       }
 
+      modal.classList.add("hidden");
       alert("Το αποτέλεσμα υποβλήθηκε και περιμένει έγκριση διαχειριστή.");
       await loadChallenges();
-    });
+    };
   });
+});
   list.querySelectorAll(".schedule-button").forEach(button=>{
   button.addEventListener("click",async()=>{
     const card=button.closest(".pending-item");
@@ -2437,7 +2569,33 @@ if (disablePushButton) {
 });
 startApp();
 </script>
- 
+ <div id="result-modal" class="hidden">
+  <div class="result-modal-content">
+
+    <h2>🎾 Καταχώρηση αποτελέσματος</h2>
+    <p>Επίλεξε τον νικητή του αγώνα</p>
+
+    <div id="result-player-options"></div>
+
+    <label for="result-score">Τελικό σκορ</label>
+    <input
+      type="text"
+      id="result-score"
+      placeholder="π.χ. 6-4, 6-3"
+    >
+
+    <div class="result-modal-actions">
+      <button id="save-result-button" type="button">
+        Υποβολή αποτελέσματος
+      </button>
+
+      <button id="cancel-result-button" type="button">
+        Ακύρωση
+      </button>
+    </div>
+
+  </div>
+</div>
 </body>
 </html>
 

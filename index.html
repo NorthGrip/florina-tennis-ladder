@@ -560,22 +560,7 @@
     <div id="leaderboard" class="loading">
       Γίνεται σύνδεση με τη βάση δεδομένων…
     </div>
-<div class="notice" style="margin:12px 0; padding:10px 14px; border:2px solid #d69e36; border-radius:10px; background:#fff8e7;">
-  <h3 style="margin-top:0; font-size:17px; color:#9a6700;">🔔 ΕΙΔΟΠΟΙΗΣΕΙΣ ΠΡΟΚΛΗΣΕΩΝ</h3>
-    <p class="intro">
-      Λάβε ειδοποίηση όταν κάποιος παίκτης σε προκαλεί σε αγώνα.
-    </p>
 
-    <button id="enable-push-button"
-      class="hidden" type="button">
-      🔔 Ενεργοποίηση ειδοποιήσεων
-    </button>
-
-    <button id="disable-push-button"
-      class="hidden" type="button">
-      🔕 Απενεργοποίηση ειδοποιήσεων
-    </button>
-  </div>
     <div id="availability-box"></div>
 <div id="connection-message" class="notice hidden"></div>
   </div>
@@ -1417,6 +1402,9 @@ document.getElementById("signup-form").addEventListener("submit",async event=>{
   const phone=document.getElementById("signup-phone").value.trim();
   const email=document.getElementById("signup-email").value.trim();
   const password=document.getElementById("signup-password").value;
+  if ("Notification" in window && Notification.permission === "default") {
+  await Notification.requestPermission();
+}
   const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{full_name,phone}}});
   if(error){setAuthMessage("Η εγγραφή απέτυχε: "+error.message,true);return;}
   if(data.session){await refreshAuth();setAuthMessage("Η εγγραφή ολοκληρώθηκε. Το προφίλ σου περιμένει έγκριση διαχειριστή.");}
@@ -1911,11 +1899,18 @@ if(chatBox){
       .maybeSingle();
 
     if(profileError) throw profileError;
-    currentProfile = profile;
-    const isApproved = profile?.status === "approved";
+currentProfile = profile;
+const isApproved = profile?.status === "approved";
+
+if (
+  isApproved &&
+  "Notification" in window &&
+  Notification.permission === "granted"
+) {
+  await enablePushNotifications();
+}
 
 let hasPushSubscription = false;
-
 if (
   isApproved &&
   "serviceWorker" in navigator &&
@@ -1930,25 +1925,6 @@ const registration = await navigator.serviceWorker.getRegistration();
   }
 }
 
-const enablePushButton =
-  document.getElementById("enable-push-button");
-
-const disablePushButton =
-  document.getElementById("disable-push-button");
-
-if (enablePushButton) {
-  enablePushButton.classList.toggle(
-    "hidden",
-    !isApproved || hasPushSubscription
-  );
-}
-
-if (disablePushButton) {
-  disablePushButton.classList.toggle(
-    "hidden",
-    !isApproved || !hasPushSubscription
-  );
-}
     const chatNavButton = document.getElementById("chat-nav-button");
 if(chatNavButton){
   chatNavButton.classList.toggle(
@@ -2503,33 +2479,32 @@ function urlBase64ToUint8Array(base64String) {
   return Uint8Array.from(rawData, char => char.charCodeAt(0));
 }
 
+
 async function enablePushNotifications() {
   try {
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-      alert("Η συσκευή ή ο browser δεν υποστηρίζει Push Notifications.");
-      return;
-    }
-
-    if (!currentProfile || currentProfile.status !== "approved") {
-      alert("Χρειάζεται εγκεκριμένος λογαριασμός.");
-      return;
-    }
-
-    const permission = await Notification.requestPermission();
-
-    if (permission !== "granted") {
-      alert("Δεν δόθηκε άδεια για ειδοποιήσεις.");
+    if (
+      !("serviceWorker" in navigator) ||
+      !("PushManager" in window) ||
+      !("Notification" in window) ||
+      Notification.permission !== "granted" ||
+      !currentProfile ||
+      currentProfile.status !== "approved"
+    ) {
       return;
     }
 
     await navigator.serviceWorker.register("/push-sw.js");
 
-const registration = await navigator.serviceWorker.ready;
+    const registration = await navigator.serviceWorker.ready;
 
-const subscription = await registration.pushManager.subscribe({
-  userVisibleOnly: true,
-  applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-});
+    let subscription = await registration.pushManager.getSubscription();
+
+    if (!subscription) {
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    }
 
     const subscriptionData = subscription.toJSON();
 
@@ -2544,57 +2519,13 @@ const subscription = await registration.pushManager.subscribe({
 
     if (error) throw error;
 
-    alert("Οι ειδοποιήσεις ενεργοποιήθηκαν επιτυχώς!");
-    document.getElementById("enable-push-button").classList.add("hidden");
-    document.getElementById("disable-push-button").classList.remove("hidden");
-
   } catch (error) {
     console.error("Push notification error:", error);
-    alert("Αποτυχία ενεργοποίησης ειδοποιήσεων: " + error.message);
   }
 }
-async function disablePushNotifications() {
-  try {
-    const registration = await navigator.serviceWorker.ready;
-    const subscription = await registration.pushManager.getSubscription();
 
-    if (subscription) {
-      const endpoint = subscription.endpoint;
 
-      const { error } = await supabaseClient
-        .from("push_subscriptions")
-        .delete()
-        .eq("endpoint", endpoint);
 
-      if (error) throw error;
-
-      await subscription.unsubscribe();
-    }
-
-    document.getElementById("enable-push-button").classList.remove("hidden");
-    document.getElementById("disable-push-button").classList.add("hidden");
-
-    alert("Οι ειδοποιήσεις απενεργοποιήθηκαν.");
-  } catch (error) {
-    console.error("Push disable error:", error);
-    alert("Αποτυχία απενεργοποίησης: " + error.message);
-  }
-}
-document.addEventListener("DOMContentLoaded", () => {
-  const enablePushButton = document.getElementById("enable-push-button");
-
-  if (enablePushButton) {
-    enablePushButton.addEventListener("click", () => {
-      
-      enablePushNotifications();
-    });
-  }
-  const disablePushButton = document.getElementById("disable-push-button");
-
-if (disablePushButton) {
-  disablePushButton.addEventListener("click", disablePushNotifications);
-}
-});
 startApp();
 </script>
  <div id="result-modal" class="hidden">

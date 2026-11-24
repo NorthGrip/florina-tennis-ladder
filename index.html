@@ -552,6 +552,14 @@
     Η κατάταξη ενημερώνεται από την κοινή βάση δεδομένων.
   </p>
 
+
+<div class="ladder-layout">
+
+  <div class="ladder-main-column">
+
+    <div id="leaderboard" class="loading">
+      Γίνεται σύνδεση με τη βάση δεδομένων…
+    </div>
 <div class="notice" style="margin:12px 0; padding:10px 14px; border:2px solid #d69e36; border-radius:10px; background:#fff8e7;">
   <h3 style="margin-top:0; font-size:17px; color:#9a6700;">🔔 ΕΙΔΟΠΟΙΗΣΕΙΣ ΠΡΟΚΛΗΣΕΩΝ</h3>
     <p class="intro">
@@ -568,10 +576,8 @@
       🔕 Απενεργοποίηση ειδοποιήσεων
     </button>
   </div>
- <div class="ladder-layout">
-
-  <div id="leaderboard" class="loading">
-    Γίνεται σύνδεση με τη βάση δεδομένων…
+    <div id="availability-box"></div>
+<div id="connection-message" class="notice hidden"></div>
   </div>
 
   <div class="notice scheduled-box" style="margin:16px 0; padding:12px; border:2px solid #4b8b68; border-radius:10px;">
@@ -582,7 +588,7 @@
   </div>
 
 </div>
-    <div id="connection-message" class="notice hidden"></div>
+    
 </section>
   
 <section id="challenges" class="panel hidden">
@@ -965,7 +971,12 @@ button.style.cssText = `
   });
 
   control.appendChild(button);
-  container.prepend(control);
+const availabilityBox = document.getElementById("availability-box");
+if(availabilityBox){
+  availabilityBox.appendChild(control);
+}else{
+  container.after(control);
+}
 }
 
 

@@ -1428,8 +1428,10 @@ document.getElementById("login-form").addEventListener("submit",async event=>{
   const email=document.getElementById("login-email").value.trim(),password=document.getElementById("login-password").value;
   const {error}=await supabaseClient.auth.signInWithPassword({email,password});
   if(error){setAuthMessage("Η σύνδεση απέτυχε: "+error.message,true);return;}
-  event.target.reset();setAuthMessage("Η σύνδεση ολοκληρώθηκε.");await refreshAuth();
-});
+event.target.reset();
+setAuthMessage("Η σύνδεση ολοκληρώθηκε.");
+await refreshAuth();
+showTab("ranking", document.querySelector('button[data-tab="ranking"]'));});
 document.getElementById("logout-button").addEventListener("click",async()=>{
   const {error}=await supabaseClient.auth.signOut();
 

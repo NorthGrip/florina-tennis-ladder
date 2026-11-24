@@ -1841,7 +1841,7 @@ details = await notificationError.context.text();  } catch (e) {}
 
   console.error("Σφάλμα ειδοποίησης:", notificationError.message, details);
 }
-
+alert("Σφάλμα PUSH: " + notificationError.message + "\n" + details);
 message.textContent = "Η πρόκληση στάλθηκε επιτυχώς!";
 select.value = "";
 await loadChallenges();

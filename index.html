@@ -832,14 +832,7 @@ async function openPlayerHistory(playerId){
   
   const { data: authData } = await supabaseClient.auth.getSession();
 
-console.log("HISTORY AUTH USER:", authData.session?.user?.id);
-console.log("HISTORY ACCESS TOKEN:", !!authData.session?.access_token);
-  console.log(
-  "HISTORY JWT ROLE:",
-  authData.session?.access_token
-    ? JSON.parse(atob(authData.session.access_token.split(".")[1])).role
-    : "NO SESSION"
-);
+
   const modal = document.getElementById("player-history-modal");
 
   modal.classList.remove("hidden");
@@ -865,11 +858,7 @@ console.log("HISTORY ACCESS TOKEN:", !!authData.session?.access_token);
         .select("*")
         .limit(100);
 
-    console.log("MATCHES DATA:", matchesData);
-   console.log("MATCHES ERROR MESSAGE:", matchesError?.message);
-console.log("MATCHES ERROR CODE:", matchesError?.code);
-console.log("MATCHES ERROR DETAILS:", matchesError?.details);
-console.log("MATCHES ERROR HINT:", matchesError?.hint);
+   
     if (matchesError) throw matchesError;
 
     const matchRows = matchesData || [];
@@ -915,8 +904,7 @@ console.log("MATCHES ERROR HINT:", matchesError?.hint);
         .order("created_at", { ascending: false });
 
     if (challengesError) throw challengesError;
-console.log("CHALLENGES DATA:", challengesData);
-console.log("CHALLENGES COUNT:", challengesData?.length);
+
     document.getElementById("player-challenge-history").innerHTML =
       challengesData?.length
         ? challengesData.map(c => {

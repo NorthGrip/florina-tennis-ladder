@@ -829,6 +829,7 @@ function setAuthMessage(message,isError=false){
 
 
 async function openPlayerHistory(playerId){
+  alert("Η openPlayerHistory εκτελείται");
   const { data: authData } = await supabaseClient.auth.getSession();
 
 console.log("HISTORY AUTH USER:", authData.session?.user?.id);

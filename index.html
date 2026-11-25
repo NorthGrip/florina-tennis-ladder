@@ -915,7 +915,8 @@ console.log("MATCHES ERROR HINT:", matchesError?.hint);
         .order("created_at", { ascending: false });
 
     if (challengesError) throw challengesError;
-
+console.log("CHALLENGES DATA:", challengesData);
+console.log("CHALLENGES COUNT:", challengesData?.length);
     document.getElementById("player-challenge-history").innerHTML =
       challengesData?.length
         ? challengesData.map(c => {

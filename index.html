@@ -828,35 +828,87 @@ function setAuthMessage(message,isError=false){
 }
 
 
-async function openPlayerHistory(playerId){
+
   
-  const { data: authData } = await supabaseClient.auth.getSession();
+  async function openPlayerHistory(playerId){
 
+  const popup = window.open(
+    "",
+    "playerHistory",
+    "width=750,height=850,resizable=yes,scrollbars=yes"
+  );
 
-  const modal = document.getElementById("player-history-modal");
+  if (!popup) {
+    alert("Επίτρεψε τα αναδυόμενα παράθυρα (pop-ups) για να δεις το ιστορικό.");
+    return;
+  }
 
-  modal.classList.remove("hidden");
+  popup.document.write(`
+    <!DOCTYPE html>
+    <html lang="el">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Ιστορικό παίκτη</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          padding: 24px;
+          background: #f4f4f4;
+          color: #222;
+        }
+        h2 { margin-top: 0; }
+        h3 { margin-top: 24px; }
+        .section {
+          background: white;
+          padding: 16px;
+          margin-bottom: 16px;
+          border-radius: 10px;
+        }
+        button {
+          float: right;
+          padding: 8px 14px;
+          cursor: pointer;
+        }
+      </style>
+    </head>
+    <body>
+      <button onclick="window.close()">Κλείσιμο ✕</button>
+      <h2 id="player-history-name">Φόρτωση ιστορικού...</h2>
+      <div class="section">
+        <h3>Στατιστικά</h3>
+        <div id="player-history-stats"></div>
+      </div>
+      <div class="section">
+        <h3>Αποτελέσματα αγώνων</h3>
+        <div id="player-match-history"></div>
+      </div>
+      <div class="section">
+        <h3>Προκλήσεις</h3>
+        <div id="player-challenge-history"></div>
+      </div>
+    </body>
+    </html>
+  `);
 
-  document.getElementById("player-history-name").textContent =
-    "Φόρτωση ιστορικού...";
+  popup.document.close();
 
-  document.getElementById("player-history-stats").textContent = "";
-  document.getElementById("player-match-history").textContent = "";
-  document.getElementById("player-challenge-history").textContent = "";
+  const doc = popup.document;
 
   try {
     const player = players.find(p => p.id === playerId);
 
     if (!player) throw new Error("Δεν βρέθηκε ο παίκτης.");
 
-    document.getElementById("player-history-name").textContent =
+    doc.getElementById("player-history-name").textContent =
       player.name;
 
        const { data: matchesData, error: matchesError } =
       await supabaseClient
         .from("matches")
-        .select("*")
-        .limit(100);
+.select("winner_id, loser_id, score, played_at")
+.or(`winner_id.eq.${playerId},loser_id.eq.${playerId}`)
+.order("played_at", { ascending: false });
 
    
     if (matchesError) throw matchesError;
@@ -869,14 +921,14 @@ async function openPlayerHistory(playerId){
       ? Math.round((wins / totalMatches) * 100)
       : 0;
 
-    document.getElementById("player-history-stats").innerHTML = `
+    doc.getElementById("player-history-stats").innerHTML = `
       <p>Αγώνες: ${totalMatches}</p>
       <p>Νίκες: ${wins}</p>
       <p>Ήττες: ${losses}</p>
       <p>Ποσοστό νικών: ${winRate}%</p>
     `;
 
-    document.getElementById("player-match-history").innerHTML =
+   doc.getElementById("player-match-history").innerHTML =
       matchRows.length
         ? matchRows.map(m => {
             const opponentId =
@@ -905,7 +957,7 @@ async function openPlayerHistory(playerId){
 
     if (challengesError) throw challengesError;
 
-    document.getElementById("player-challenge-history").innerHTML =
+ doc.getElementById("player-challenge-history").innerHTML =
       challengesData?.length
         ? challengesData.map(c => {
             const otherId =
@@ -930,9 +982,9 @@ async function openPlayerHistory(playerId){
   } catch (error) {
     console.error("Σφάλμα ιστορικού:", error);
     alert(error.message);
-    document.getElementById("player-history-name").textContent =
+    doc.getElementById("player-history-name").textContent =
       "Σφάλμα φόρτωσης ιστορικού";
-    document.getElementById("player-history-stats").textContent =
+    doc.getElementById("player-history-stats").textContent =
       error.message || "Δεν ήταν δυνατή η φόρτωση.";
   }
 }

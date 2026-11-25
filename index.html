@@ -834,6 +834,12 @@ async function openPlayerHistory(playerId){
 
 console.log("HISTORY AUTH USER:", authData.session?.user?.id);
 console.log("HISTORY ACCESS TOKEN:", !!authData.session?.access_token);
+  console.log(
+  "HISTORY JWT ROLE:",
+  authData.session?.access_token
+    ? JSON.parse(atob(authData.session.access_token.split(".")[1])).role
+    : "NO SESSION"
+);
   const modal = document.getElementById("player-history-modal");
 
   modal.classList.remove("hidden");

@@ -843,9 +843,11 @@ function renderPlayers(){
         <div class="player">
           <span class="rank">${p.position}</span>
 
-          <span class="player-name">
-            ${escapeHTML(p.name)}
-          </span>
+          <span class="player-name"
+      onclick="openPlayerHistory('${p.id}')"
+      style="cursor:pointer">
+  ${escapeHTML(p.name)}
+</span>
 
           <span class="small">
             Νίκες: ${p.wins || 0} |
@@ -2563,6 +2565,21 @@ startApp();
       </button>
     </div>
 
+  </div>
+</div>
+  <div id="player-history-modal" class="hidden">
+  <div class="player-history-content">
+    <button id="close-player-history" type="button">✕</button>
+    <h2 id="player-history-name">Ιστορικό παίκτη</h2>
+
+    <h3>Στατιστικά</h3>
+    <div id="player-history-stats"></div>
+
+    <h3>Αποτελέσματα αγώνων</h3>
+    <div id="player-match-history"></div>
+
+    <h3>Προκλήσεις</h3>
+    <div id="player-challenge-history"></div>
   </div>
 </div>
 </body>

@@ -925,6 +925,7 @@ async function openPlayerHistory(playerId){
 
   } catch (error) {
     console.error("Σφάλμα ιστορικού:", error);
+    alert(error.message);
     document.getElementById("player-history-name").textContent =
       "Σφάλμα φόρτωσης ιστορικού";
     document.getElementById("player-history-stats").textContent =

@@ -855,8 +855,10 @@ async function openPlayerHistory(playerId){
         .limit(100);
 
     console.log("MATCHES DATA:", matchesData);
-    console.log("MATCHES ERROR:", matchesError);
-
+   console.log("MATCHES ERROR MESSAGE:", matchesError?.message);
+console.log("MATCHES ERROR CODE:", matchesError?.code);
+console.log("MATCHES ERROR DETAILS:", matchesError?.details);
+console.log("MATCHES ERROR HINT:", matchesError?.hint);
     if (matchesError) throw matchesError;
 
     const matchRows = matchesData || [];

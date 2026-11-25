@@ -829,6 +829,10 @@ function setAuthMessage(message,isError=false){
 
 
 async function openPlayerHistory(playerId){
+  const { data: authData } = await supabaseClient.auth.getSession();
+
+console.log("HISTORY AUTH USER:", authData.session?.user?.id);
+console.log("HISTORY ACCESS TOKEN:", !!authData.session?.access_token);
   const modal = document.getElementById("player-history-modal");
 
   modal.classList.remove("hidden");

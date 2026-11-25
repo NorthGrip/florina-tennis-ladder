@@ -848,12 +848,14 @@ async function openPlayerHistory(playerId){
     document.getElementById("player-history-name").textContent =
       player.name;
 
-    const { data: matchesData, error: matchesError } =
+       const { data: matchesData, error: matchesError } =
       await supabaseClient
         .from("matches")
-        .select("winner_id, loser_id, score, played_at, status")
-        .or(`winner_id.eq.${playerId},loser_id.eq.${playerId}`)
-        .order("played_at", { ascending: false });
+        .select("*")
+        .limit(100);
+
+    console.log("MATCHES DATA:", matchesData);
+    console.log("MATCHES ERROR:", matchesError);
 
     if (matchesError) throw matchesError;
 

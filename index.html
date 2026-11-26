@@ -906,15 +906,25 @@ function setAuthMessage(message,isError=false){
        const { data: matchesData, error: matchesError } =
       await supabaseClient
         .from("matches")
-.select("winner_id, loser_id, score, played_at")
-.or(`winner_id.eq.${playerId},loser_id.eq.${playerId}`)
+.select("winner_id, loser_id, score, played_at, challenge_id")
+         .or(`winner_id.eq.${playerId},loser_id.eq.${playerId}`)
 .order("played_at", { ascending: false });
 
    
     if (matchesError) throw matchesError;
 
-    const matchRows = matchesData || [];
-    const wins = matchRows.filter(m => m.winner_id === playerId).length;
+let matchChallengesData = [];
+
+if (matchRows.length) {
+  const { data, error } = await supabaseClient
+    .from("challenges")
+    .select("id, challenger_id, opponent_id")
+    .in("id", matchRows.map(m => m.challenge_id));
+
+  if (error) throw error;
+
+  matchChallengesData = data || [];
+}    const wins = matchRows.filter(m => m.winner_id === playerId).length;
     const losses = matchRows.filter(m => m.loser_id === playerId).length;
     const totalMatches = wins + losses;
     const winRate = totalMatches
@@ -934,16 +944,33 @@ function setAuthMessage(message,isError=false){
             const opponentId =
               m.winner_id === playerId ? m.loser_id : m.winner_id;
 
-            const opponent = players.find(p => p.id === opponentId);
-            const result = m.winner_id === playerId ? "Νίκη" : "Ήττα";
+           const opponent = players.find(p => p.id === opponentId);
+const result = m.winner_id === playerId ? "Νίκη" : "Ήττα";
+
+const challenge = matchChallengesData.find(
+  c => c.id === m.challenge_id
+);
+
+const isMyChallenge = challenge?.challenger_id === playerId;
+
+const challengeMark = challenge
+  ? `<span style="
+       display:inline-block;
+       width:10px;
+       height:10px;
+       border-radius:50%;
+       background:${isMyChallenge ? '#2196f3' : '#22a06b'};
+       margin-left:8px;
+     " title="${isMyChallenge ? 'Πρόκληση από τον παίκτη' : 'Πρόκληση από τον αντίπαλο'}"></span>`
+  : "";
 
             return `
               <p>
                 ${new Date(m.played_at).toLocaleDateString("el-GR")} —
                 ${escapeHTML(opponent?.name || "Άγνωστος παίκτης")} —
                 ${escapeHTML(m.score || "Χωρίς σκορ")} —
-                ${result}
-              </p>
+          ${result} ${challengeMark}            
+          </p>
             `;
           }).join("")
         : "<p>Δεν υπάρχουν καταχωρημένοι αγώνες.</p>";
@@ -951,8 +978,8 @@ function setAuthMessage(message,isError=false){
     const { data: challengesData, error: challengesError } =
       await supabaseClient
         .from("challenges")
-        .select("challenger_id, opponent_id, status, created_at, scheduled_at")
-        .or(`challenger_id.eq.${playerId},opponent_id.eq.${playerId}`)
+.select("id, challenger_id, opponent_id, status, created_at, scheduled_at")    
+      .or(`challenger_id.eq.${playerId},opponent_id.eq.${playerId}`)
         .order("created_at", { ascending: false });
 
     if (challengesError) throw challengesError;

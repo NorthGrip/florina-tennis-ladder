@@ -1118,12 +1118,12 @@ button.style.cssText = `
     await loadRanking();
   });
 
-  control.appendChild(button);
-const availabilityBox = document.getElementById("availability-box");
-if(availabilityBox){
-  availabilityBox.appendChild(control);
-}else{
-  container.after(control);
+control.appendChild(button);
+control.style.display = "contents";
+
+const menu = document.getElementById("main-menu");
+if(menu){
+  menu.appendChild(control);
 }
 }
 

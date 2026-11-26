@@ -510,7 +510,39 @@ background:#a8c99e !important;
 
 <main class="wrap">
   
+ <div id="chat" style="
+  position:static;
+  width:100%;
+  max-width:700px;
+  margin:30px auto;
+">
+  <div class="card" style="
+    box-shadow:0 4px 20px rgba(0,0,0,0.2);
+    border:1px solid #cbdcc8;
+  ">
+    <h2>💬 NorthGrip Players</h2>
 
+    <div id="chat-messages"
+         style="height:250px;overflow-y:auto;padding:12px;background:#f5f7f5;border-radius:12px;">
+      <p>Φόρτωση μηνυμάτων...</p>
+    </div>
+
+    <div id="chat-compose" class="hidden">
+      <textarea
+        id="chat-message"
+        maxlength="1000"
+        placeholder="Γράψε το μήνυμά σου..."
+        rows="3">
+      </textarea>
+
+      <button type="button" id="send-chat-message" class="action">
+        Αποστολή 💬
+      </button>
+    </div>
+
+    <p id="chat-status" role="status"></p>
+  </div>
+</div>
   <section id="ladder-timer" class="panel" style="text-align:center;margin-top:18px">
    
     <p id="ladder-timer-status">Γίνεται έλεγχος κατάστασης…</p>
@@ -782,39 +814,7 @@ background:#a8c99e !important;
     <div id="champions-history"></div>
   </div>
 </section>
- <div id="chat" style="
-  position:static;
-  width:100%;
-  max-width:700px;
-  margin:30px auto;
-">
-  <div class="card" style="
-    box-shadow:0 4px 20px rgba(0,0,0,0.2);
-    border:1px solid #cbdcc8;
-  ">
-    <h2>💬 NorthGrip Players</h2>
 
-    <div id="chat-messages"
-         style="height:250px;overflow-y:auto;padding:12px;background:#f5f7f5;border-radius:12px;">
-      <p>Φόρτωση μηνυμάτων...</p>
-    </div>
-
-    <div id="chat-compose" class="hidden">
-      <textarea
-        id="chat-message"
-        maxlength="1000"
-        placeholder="Γράψε το μήνυμά σου..."
-        rows="3">
-      </textarea>
-
-      <button type="button" id="send-chat-message" class="action">
-        Αποστολή 💬
-      </button>
-    </div>
-
-    <p id="chat-status" role="status"></p>
-  </div>
-</div>
 </main>
   <section class="stats" aria-label="Στατιστικά">
     <div class="stat"><span>Παίκτες</span><strong id="total">— / 35</strong></div>

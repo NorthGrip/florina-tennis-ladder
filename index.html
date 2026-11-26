@@ -911,7 +911,9 @@ function setAuthMessage(message,isError=false){
 .order("played_at", { ascending: false });
 
    
-    if (matchesError) throw matchesError;
+if (matchesError) throw matchesError;
+
+const matchRows = matchesData || [];
 
 let matchChallengesData = [];
 
@@ -923,13 +925,15 @@ if (matchRows.length) {
 
   if (error) throw error;
 
-  matchChallengesData = data || [];
-}    const wins = matchRows.filter(m => m.winner_id === playerId).length;
-    const losses = matchRows.filter(m => m.loser_id === playerId).length;
-    const totalMatches = wins + losses;
-    const winRate = totalMatches
-      ? Math.round((wins / totalMatches) * 100)
-      : 0;
+   matchChallengesData = data || [];
+}
+
+const wins = matchRows.filter(m => m.winner_id === playerId).length;
+const losses = matchRows.filter(m => m.loser_id === playerId).length;
+const totalMatches = wins + losses;
+const winRate = totalMatches
+  ? Math.round((wins / totalMatches) * 100)
+  : 0;
 
     doc.getElementById("player-history-stats").innerHTML = `
       <p>Αγώνες: ${totalMatches}</p>

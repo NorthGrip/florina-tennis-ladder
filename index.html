@@ -979,37 +979,6 @@ const challengeMark = challenge
           }).join("")
         : "<p>Δεν υπάρχουν καταχωρημένοι αγώνες.</p>";
 
-    const { data: challengesData, error: challengesError } =
-      await supabaseClient
-        .from("challenges")
-.select("id, challenger_id, opponent_id, status, created_at, scheduled_at")    
-      .or(`challenger_id.eq.${playerId},opponent_id.eq.${playerId}`)
-        .order("created_at", { ascending: false });
-
-    if (challengesError) throw challengesError;
-
- doc.getElementById("player-challenge-history").innerHTML =
-      challengesData?.length
-        ? challengesData.map(c => {
-            const otherId =
-              c.challenger_id === playerId ? c.opponent_id : c.challenger_id;
-
-            const otherPlayer = players.find(p => p.id === otherId);
-            const role =
-              c.challenger_id === playerId ? "Προκάλεσε" : "Προκλήθηκε από";
-
-            const date = c.scheduled_at || c.created_at;
-
-            return `
-              <p>
-                ${role} ${escapeHTML(otherPlayer?.name || "Άγνωστος παίκτης")} —
-                ${new Date(date).toLocaleDateString("el-GR")} —
-                ${escapeHTML(c.status || "Άγνωστη κατάσταση")}
-              </p>
-            `;
-          }).join("")
-        : "<p>Δεν υπάρχουν προκλήσεις.</p>";
-
   } catch (error) {
     console.error("Σφάλμα ιστορικού:", error);
     alert(error.message);

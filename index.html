@@ -1034,9 +1034,7 @@ function renderPlayers(){
       onclick="openPlayerHistory('${p.id}')"
       style="cursor:pointer">
   ${escapeHTML(p.name)}
-  ${p.has_pending_challenge
-    ? '<span style="color:#e53935;font-size:12px;font-weight:bold;"> 🔴 Έχει προκληθεί</span>'
-    : ''}
+ 
 </span>
 
           <span class="small">

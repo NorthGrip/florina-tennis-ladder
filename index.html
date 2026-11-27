@@ -748,12 +748,21 @@ background:#a8c99e !important;
     <p><strong>Σημείωση:</strong> Η αυτόματη επαναφορά διαθεσιμότητας μετά από 7 ημέρες δεν έχει ενεργοποιηθεί ακόμη τεχνικά.</p>
 
     <h3>Αποτελέσματα και βαθμολογία</h3>
+    <h3>Προθεσμία αποδοχής πρόκλησης</h3>
+<ul>
+  <li>Ο παίκτης που δέχεται την πρόκληση έχει 24 ώρες από την αποστολή της για να την αποδεχτεί.</li>
+  <li>Αν δεν την αποδεχτεί μέσα σε 24 ώρες, η πρόκληση λήγει αυτόματα.</li>
+  <li>Ο παίκτης που έστειλε την πρόκληση κερδίζει με σκορ W/O (άνευ αγώνα).</li>
+  <li>Το αποτέλεσμα καταχωρίζεται αυτόματα στο ιστορικό και ενημερώνεται η κατάταξη.</li>
+  <li>Ο νικητής λαμβάνει 3 βαθμούς και ο αντίπαλος 1 βαθμό, όπως σε κανονικό αγώνα.</li>
+</ul>
     <ul>
       <li>Ο παίκτης υποβάλλει το αποτέλεσμα του αγώνα.</li>
       <li>Το αποτέλεσμα γίνεται επίσημο μετά την έγκριση του διαχειριστή.</li>
       <li>Νίκη: 3 βαθμοί.</li>
       <li>Ήττα: 1 βαθμός.</li>
-      <li>Μη συμμετοχή: 0 βαθμοί.</li>
+     <li>Μη συμμετοχή σε αγώνα χωρίς έγκαιρη ενημέρωση ή συμφωνημένη αναβολή: 0 βαθμοί.</li>
+<li>Αυτόματη νίκη W/O λόγω μη αποδοχής πρόκλησης εντός 24 ωρών: 3 βαθμοί στον νικητή και 1 στον αντίπαλο.</li>
     </ul>
 
     <h3>Μετακίνηση στην κατάταξη</h3>
@@ -1017,6 +1026,7 @@ function closePlayerHistory(){
   document.getElementById("player-history-modal")
     .classList.add("hidden");
 }
+  let challengeCountdownInterval = null;
 function renderPlayers(){
   const leaderboard = document.getElementById("leaderboard");
   const total = document.getElementById("total");
@@ -1037,6 +1047,12 @@ function renderPlayers(){
  
 </span>
 
+${p.challenge_started_at ? `
+  <span class="small challenge-countdown"
+    data-start="${p.challenge_started_at}">
+    ⏳ Υπολογισμός χρόνου...
+  </span>
+` : ""}
           <span class="small">
             Νίκες: ${p.wins || 0} |
             Ήττες: ${p.losses || 0} |
@@ -1055,7 +1071,35 @@ function renderPlayers(){
         </div>
       `).join("")
     : '<p class="small">Δεν βρέθηκαν εγκεκριμένοι παίκτες.</p>';
+  if (challengeCountdownInterval) {
+    clearInterval(challengeCountdownInterval);
+  }
 
+  const updateChallengeCountdowns = () => {
+    document.querySelectorAll(".challenge-countdown").forEach(timer => {
+      const start = new Date(timer.dataset.start).getTime();
+      const deadline = start + 24 * 60 * 60 * 1000;
+      const remaining = deadline - Date.now();
+
+      if (remaining <= 0) {
+        timer.textContent = "⌛ Η προθεσμία έληξε";
+        return;
+      }
+
+      const hours = Math.floor(remaining / 3600000);
+      const minutes = Math.floor((remaining % 3600000) / 60000);
+      const seconds = Math.floor((remaining % 60000) / 1000);
+
+      timer.textContent =
+        `⏳ Απομένουν ${String(hours).padStart(2,"0")}:${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
+    });
+  };
+
+  updateChallengeCountdowns();
+
+  if (document.querySelector(".challenge-countdown")) {
+    challengeCountdownInterval = setInterval(updateChallengeCountdowns, 1000);
+  }
   showMyAvailabilityButton();
 }
 
@@ -1683,7 +1727,7 @@ async function loadChallenges(){
 
   const {data:activeChallenges,error:activeError}=await supabaseClient
     .from("challenges")
-.select("challenger_id,opponent_id,status")
+.select("challenger_id,opponent_id,status,proposed_at,created_at")
     .in("status",["pending","accepted"]);
 
   if(activeError){
@@ -1694,7 +1738,15 @@ async function loadChallenges(){
 
  const busyPlayers=new Set();
 const challengedPlayers=new Set();
+  
+const challengeTimers = {};
 
+(activeChallenges || []).forEach(c => {
+  if (c.status === "pending") {
+    challengeTimers[c.opponent_id] =
+      new Date(c.proposed_at || c.created_at).getTime();
+  }
+});
 (activeChallenges||[]).forEach(c=>{
   busyPlayers.add(c.challenger_id);
   busyPlayers.add(c.opponent_id);
@@ -1705,8 +1757,8 @@ challengedPlayers.add(c.challenger_id);
 
 players.forEach(p=>{
   p.has_pending_challenge = challengedPlayers.has(p.id);
-});;
-
+  p.challenge_started_at = challengeTimers[p.id] || null;
+});
  renderPlayers();
  
 if(me){

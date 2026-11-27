@@ -1047,10 +1047,12 @@ function renderPlayers(){
 
           <span class="small">
             ${p.in_match
-              ? "🎾 Σε αγώνα"
-              : p.is_available
-                ? "🟢 Διαθέσιμος"
-                : "⚪ Μη διαθέσιμος"}
+  ? "🎾 Σε αγώνα"
+  : p.has_pending_challenge
+    ? "🔴 Βρίσκεται σε πρόκληση"
+    : p.is_available
+      ? "🟢 Διαθέσιμος"
+      : "⚪ Μη διαθέσιμος"}
           </span>
         </div>
       `).join("")
@@ -1667,6 +1669,7 @@ const challengedPlayers=new Set();
   busyPlayers.add(c.opponent_id);
 
   challengedPlayers.add(c.opponent_id);
+challengedPlayers.add(c.challenger_id);
 });
 
 players.forEach(p=>{
@@ -2182,8 +2185,9 @@ if(championAdminForm){
       adminSection.classList.add("hidden");
     }
 
-    await loadChallenges();
+    
 await loadRanking();
+    await loadChallenges();
 await loadChatMessages();
   }catch(error){
     console.error("Σφάλμα ανανέωσης σύνδεσης:",error);

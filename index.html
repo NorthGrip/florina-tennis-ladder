@@ -1077,7 +1077,7 @@ ${p.challenge_started_at ? `
 
   const updateChallengeCountdowns = () => {
     document.querySelectorAll(".challenge-countdown").forEach(timer => {
-      const start = new Date(timer.dataset.start).getTime();
+const start = Number(timer.dataset.start);  
       const deadline = start + 24 * 60 * 60 * 1000;
       const remaining = deadline - Date.now();
 

@@ -1059,15 +1059,22 @@ ${p.challenge_started_at ? `
             Πόντοι: ${p.points || 0}
           </span>
 
-          <span class="small">
-            ${p.in_match
-  ? "🎾 Σε αγώνα"
-  : p.has_pending_challenge
-    ? "🔴 Βρίσκεται σε πρόκληση"
-    : p.is_available
-      ? "🟢 Διαθέσιμος"
-      : "⚪ Μη διαθέσιμος"}
-          </span>
+         <span class="small">
+  ${p.in_match
+    ? "🎾 Σε αγώνα"
+    : p.has_pending_challenge
+      ? "🔴 Βρίσκεται σε πρόκληση"
+      : p.is_available
+        ? "🟢 Διαθέσιμος"
+        : "⚪ Μη διαθέσιμος"}
+  ${p.challenge_started_at ? " · " : ""}
+  ${p.challenge_started_at ? `
+    <span class="challenge-countdown"
+      data-start="${p.challenge_started_at}">
+      ⏳ Υπολογισμός χρόνου...
+    </span>
+  ` : ""}
+</span>
         </div>
       `).join("")
     : '<p class="small">Δεν βρέθηκαν εγκεκριμένοι παίκτες.</p>';

@@ -1346,9 +1346,42 @@ async function loadPendingResults(){
         button.disabled = false;
         return;
       }
+const approvedMatch = matches.find(
+  m => m.id === button.dataset.matchId
+);
 
+if(approvedMatch){
+  const announcement =
+    `🏆 Αποτέλεσμα αγώνα: ${playerName(approvedMatch.winner_id)} νίκησε τον ${playerName(approvedMatch.loser_id)} με σκορ ${approvedMatch.score || "Χωρίς σκορ"}!`;
+
+  const {error:chatError} = await supabaseClient
+    .from("player_chat_messages")
+    .insert({
+      player_id: currentProfile.id,
+      message: announcement
+    });
+
+  if(chatError){
+    console.error("Σφάλμα ανακοίνωσης αποτελέσματος:", chatError);
+    alert("Ο αγώνας εγκρίθηκε, αλλά δεν δημοσιεύτηκε η ανακοίνωση στο chat.");
+  }
+}
+      const { data: pushData, error: pushError } =
+  await supabaseClient.functions.invoke("smooth-endpoint", {
+    body: {
+      action: "match_result",
+      match_id: button.dataset.matchId
+    }
+  });
+
+if(pushError){
+  console.error("Σφάλμα Push αποτελέσματος:", pushError);
+  alert("Ο αγώνας εγκρίθηκε, αλλά υπήρξε πρόβλημα στην αποστολή Push.");
+} else {
+  console.log("ΑΠΟΤΕΛΕΣΜΑ PUSH:", pushData);
+}
       alert("Το αποτέλεσμα εγκρίθηκε επιτυχώς.");
-
+      
       await loadPendingResults();
       await loadRanking();
       await loadChallenges();

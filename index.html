@@ -746,7 +746,13 @@ background:#a8c99e !important;
       <li>Αν υπάρχει ήδη αποδεκτή πρόκληση, αυτή δεν ακυρώνεται αυτόματα. Οι δύο παίκτες συμφωνούν νέα ημερομηνία ή απευθύνονται στον διαχειριστή.</li>
     </ul>
     <p><strong>Σημείωση:</strong> Η αυτόματη επαναφορά διαθεσιμότητας μετά από 7 ημέρες δεν έχει ενεργοποιηθεί ακόμη τεχνικά.</p>
-
+<h3>Προθεσμία διεξαγωγής αγώνα</h3>
+<ul>
+  <li>Μετά την αποδοχή μιας πρόκλησης, οι δύο παίκτες έχουν 48 ώρες για να πραγματοποιήσουν τον αγώνα.</li>
+  <li>Αν περάσουν 48 ώρες χωρίς να καταχωριστεί αποτέλεσμα, ενημερώνονται οι δύο παίκτες και ο διαχειριστής.</li>
+  <li>Σε αυτή την περίπτωση, ο διαχειριστής αποφασίζει για τη διευθέτηση της πρόκλησης.</li>
+  <li>Η παρέλευση των 48 ωρών δεν συνεπάγεται αυτόματη νίκη W/O.</li>
+</ul>
     <h3>Αποτελέσματα και βαθμολογία</h3>
     <h3>Προθεσμία αποδοχής πρόκλησης</h3>
 <ul>
@@ -1050,7 +1056,7 @@ function renderPlayers(){
 
 
          <span class="small">
-  ${p.in_match
+ ${p.in_match
     ? "🎾 Σε αγώνα"
     : p.has_pending_challenge
       ? "🔴 Βρίσκεται σε πρόκληση"
@@ -1064,6 +1070,13 @@ function renderPlayers(){
       ⏳ Υπολογισμός χρόνου...
     </span>
   ` : ""}
+  ${p.accepted_challenge_started_at ? " · " : ""}
+  ${p.accepted_challenge_started_at ? `
+    <span class="accepted-challenge-countdown"
+      data-start="${p.accepted_challenge_started_at}">
+      ⏳ Υπολογισμός 48ώρου...
+    </span>
+  ` : ""}
 </span>
         </div>
       `).join("")
@@ -1073,29 +1086,50 @@ function renderPlayers(){
   }
 
   const updateChallengeCountdowns = () => {
-    document.querySelectorAll(".challenge-countdown").forEach(timer => {
-const start = Number(timer.dataset.start);  
-      const deadline = start + 24 * 60 * 60 * 1000;
-      const remaining = deadline - Date.now();
 
-      if (remaining <= 0) {
-        timer.textContent = "⌛ Η προθεσμία έληξε";
-        return;
-      }
+  document.querySelectorAll(".challenge-countdown").forEach(timer => {
+    const start = Number(timer.dataset.start);
+    const deadline = start + 24 * 60 * 60 * 1000;
+    const remaining = deadline - Date.now();
 
-      const hours = Math.floor(remaining / 3600000);
-      const minutes = Math.floor((remaining % 3600000) / 60000);
-      const seconds = Math.floor((remaining % 60000) / 1000);
+    if (remaining <= 0) {
+      timer.textContent = "⌛ Η προθεσμία έληξε";
+      return;
+    }
 
-      timer.textContent =
-        `⏳ Απομένουν ${String(hours).padStart(2,"0")}:${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
-    });
-  };
+    const hours = Math.floor(remaining / 3600000);
+    const minutes = Math.floor((remaining % 3600000) / 60000);
+    const seconds = Math.floor((remaining % 60000) / 1000);
+
+    timer.textContent =
+      `⏳ Απομένουν ${String(hours).padStart(2,"0")}:${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
+  });
+
+  document.querySelectorAll(".accepted-challenge-countdown").forEach(timer => {
+    const start = Number(timer.dataset.start);
+    const deadline = start + 48 * 60 * 60 * 1000;
+    const remaining = deadline - Date.now();
+
+    if (remaining <= 0) {
+      timer.textContent = "⌛ 48ωρο έληξε – Εκκρεμεί διαχειριστής";
+      return;
+    }
+
+    const hours = Math.floor(remaining / 3600000);
+    const minutes = Math.floor((remaining % 3600000) / 60000);
+    const seconds = Math.floor((remaining % 60000) / 1000);
+
+    timer.textContent =
+      `🎾 Απομένουν ${String(hours).padStart(2,"0")}:${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
+  });
+};
 
   updateChallengeCountdowns();
 
-  if (document.querySelector(".challenge-countdown")) {
-    challengeCountdownInterval = setInterval(updateChallengeCountdowns, 1000);
+if (
+  document.querySelector(".challenge-countdown") ||
+  document.querySelector(".accepted-challenge-countdown")
+) {    challengeCountdownInterval = setInterval(updateChallengeCountdowns, 1000);
   }
   showMyAvailabilityButton();
 }
@@ -1724,7 +1758,7 @@ async function loadChallenges(){
 
   const {data:activeChallenges,error:activeError}=await supabaseClient
     .from("challenges")
-.select("challenger_id,opponent_id,status,proposed_at,created_at")
+.select("challenger_id,opponent_id,status,proposed_at,created_at,accepted_at")  
     .in("status",["pending","accepted"]);
 
   if(activeError){
@@ -1737,7 +1771,16 @@ async function loadChallenges(){
 const challengedPlayers=new Set();
   
 const challengeTimers = {};
+const acceptedChallengeTimers = {};
 
+(activeChallenges || []).forEach(c => {
+  if (c.status === "accepted" && c.accepted_at) {
+    const acceptedTime = new Date(c.accepted_at).getTime();
+
+    acceptedChallengeTimers[c.challenger_id] = acceptedTime;
+    acceptedChallengeTimers[c.opponent_id] = acceptedTime;
+  }
+});
 (activeChallenges || []).forEach(c => {
   if (c.status === "pending") {
     challengeTimers[c.opponent_id] =
@@ -1755,6 +1798,8 @@ challengedPlayers.add(c.challenger_id);
 players.forEach(p=>{
   p.has_pending_challenge = challengedPlayers.has(p.id);
   p.challenge_started_at = challengeTimers[p.id] || null;
+  p.accepted_challenge_started_at =
+  acceptedChallengeTimers[p.id] || null;
 });
  renderPlayers();
  

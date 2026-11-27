@@ -1047,17 +1047,7 @@ function renderPlayers(){
  
 </span>
 
-${p.challenge_started_at ? `
-  <span class="small challenge-countdown"
-    data-start="${p.challenge_started_at}">
-    ⏳ Υπολογισμός χρόνου...
-  </span>
-` : ""}
-          <span class="small">
-            Νίκες: ${p.wins || 0} |
-            Ήττες: ${p.losses || 0} |
-            Πόντοι: ${p.points || 0}
-          </span>
+
 
          <span class="small">
   ${p.in_match

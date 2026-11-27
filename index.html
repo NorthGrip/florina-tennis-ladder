@@ -1812,23 +1812,37 @@ if(c.status==="accepted" && isParticipant &&
     </button>
   `;
 }
-    if(c.status==="accepted" && isParticipant){
-  const scheduledValue = c.scheduled_at
-    ? new Date(new Date(c.scheduled_at).getTime() -
-        new Date(c.scheduled_at).getTimezoneOffset()*60000)
-        .toISOString().slice(0,16)
-    : "";
+let scheduleControls = "";
+let scheduleInfo = "";
 
-  scheduleControls = `
-    <div style="margin-top:10px;">
-      <label>Ημερομηνία και ώρα αγώνα</label>
-      <input class="schedule-input" type="datetime-local"
-        value="${scheduledValue}">
-      <button class="action schedule-button" data-id="${escapeHTML(c.id)}" type="button">
-        Αποθήκευση ημερομηνίας
-      </button>
-    </div>
-  `;
+if(c.status === "accepted"){
+  if(c.scheduled_at){
+    scheduleInfo = `
+      <div class="small" style="margin-top:8px;font-weight:bold;">
+        🎾 Προγραμματισμένος αγώνας:
+        ${escapeHTML(new Date(c.scheduled_at).toLocaleString("el-GR"))}
+      </div>
+    `;
+  }
+
+  if(isParticipant){
+    const scheduledValue = c.scheduled_at
+      ? new Date(new Date(c.scheduled_at).getTime() -
+          new Date(c.scheduled_at).getTimezoneOffset()*60000)
+          .toISOString().slice(0,16)
+      : "";
+
+    scheduleControls = `
+      <div style="margin-top:10px;">
+        <label>Ημερομηνία και ώρα αγώνα</label>
+        <input class="schedule-input" type="datetime-local"
+          value="${scheduledValue}">
+        <button class="action schedule-button" data-id="${escapeHTML(c.id)}" type="button">
+          Αποθήκευση ημερομηνίας
+        </button>
+      </div>
+    `;
+  }
 }
 
     return `
@@ -1842,6 +1856,7 @@ if(c.status==="accepted" && isParticipant &&
             · ${new Date(c.proposed_at||c.created_at).toLocaleDateString("el-GR")}
           </div>
           ${resultInfo}
+          ${scheduleInfo}
           ${scheduleControls}
         </div>
 

@@ -1034,6 +1034,9 @@ function renderPlayers(){
       onclick="openPlayerHistory('${p.id}')"
       style="cursor:pointer">
   ${escapeHTML(p.name)}
+  ${p.has_pending_challenge
+    ? '<span style="color:#e53935;font-size:12px;font-weight:bold;"> 🔴 Έχει προκληθεί</span>'
+    : ''}
 </span>
 
           <span class="small">
@@ -1647,7 +1650,7 @@ async function loadChallenges(){
 
   const {data:activeChallenges,error:activeError}=await supabaseClient
     .from("challenges")
-    .select("challenger_id,opponent_id")
+.select("challenger_id,opponent_id,status")
     .in("status",["pending","accepted"]);
 
   if(activeError){
@@ -1655,14 +1658,22 @@ async function loadChallenges(){
     return;
   }
 
-  const busyPlayers=new Set();
 
-  (activeChallenges||[]).forEach(c=>{
-    busyPlayers.add(c.challenger_id);
-    busyPlayers.add(c.opponent_id);
-  });
+ const busyPlayers=new Set();
+const challengedPlayers=new Set();
 
- 
+(activeChallenges||[]).forEach(c=>{
+  busyPlayers.add(c.challenger_id);
+  busyPlayers.add(c.opponent_id);
+
+  challengedPlayers.add(c.opponent_id);
+});
+
+players.forEach(p=>{
+  p.has_pending_challenge = challengedPlayers.has(p.id);
+});;
+
+ renderPlayers();
  
 if(me){
   const candidates=players
